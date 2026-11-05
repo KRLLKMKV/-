@@ -165,10 +165,10 @@ ctx.clearRect(0, 0, canvas.width, canvas.height); // Полностью очищ
 for (let r = 0; r < currentMap.length; r++) { // Бежим по строкам матрицы
 for (let c = 0; c < currentMap[r].length; c++) { // Бежим по колонкам матрицы
 if (currentMap[r][c] === 1) { // Если в ячейке стоит 1:
-ctx.fillStyle = '#0000FF'; // Выбираем цвет для кубиков стен
+ctx.fillStyle = '#269926'; // Выбираем цвет для кубиков стен
 ctx.fillRect(c * blockSize + 1, r * blockSize + 1, blockSize - 2, blockSize - 2); // Рисуем квадрат стены 30х30
 ctx.strokeStyle = '#000000'; // Выбираем цвет для обводки границ кубиков стен
-ctx.lineWidth = 1; // Выбираем толщину линии обводки границ кубиков стен (единица измерения - пиксели)
+ctx.lineWidth = 2; // Выбираем толщину линии обводки границ кубиков стен (единица измерения - пиксели)
 ctx.strokeRect(c * blockSize + 1, r * blockSize +1, blockSize - 2, blockSize - 2); //здесь контур обводки рисуется ровно по границе кубика
 } else if (currentMap[r][c] === 3) { // Если в ячейке стоит 3 (выход):
 // Если рыба осталась — красим финиш в блекло-зеленый, если вся съедена — в ярко-зеленый
@@ -186,13 +186,13 @@ ctx.fillText('🔒', c * blockSize + 7, r * blockSize + 20);
 for (let fish of fishList) {
 ctx.beginPath(); // Начинаем рисовать новую фигуру
 ctx.ellipse(fish.x, fish.y, fish.radius + 3, fish.radius, 0, 0, Math.PI * 2); // Рисуем овальное тело рыбки
-ctx.fillStyle = '#fffa65'; // Выбираем желтый цвет для рыбы
+ctx.fillStyle = '#FFB000'; // Выбираем цвет для рыбы
 ctx.fill(); // Закрашиваем её форму
 ctx.closePath(); // Заканчиваем рисование фигуры
 }
-// Рисуем врагов (красные кубики-пылесосы)
+// Рисуем врагов (красные кубики)
 for (let enemy of enemies) {
-ctx.fillStyle = '#ff4757'; // Выбираем красный цвет для дронов
+ctx.fillStyle = '#FF0000'; // Выбираем красный цвет для врагов
 ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size); // Рисуем квадрат врага
 }
 // Рисуем главного героя — котика
@@ -201,7 +201,7 @@ if (catImage.complete && catImage.naturalWidth !== 0) {
 ctx.drawImage(catImage, player.x, player.y, player.size, player.size);
 } else {
 // Запасной вариант: если картинки нет на сервере, рисуем обычный оранжевый квадратик
-ctx.fillStyle = '#ffa500';
+ctx.fillStyle = '#FF8000';
 ctx.fillRect(player.x, player.y, player.size, player.size);
 }
 }
