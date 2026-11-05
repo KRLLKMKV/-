@@ -11,7 +11,7 @@ const catImage = new Image(); // Создаем виртуальный объе�
 catImage.src = 'cat1.png'; // Указываем путь к картинке котика
 
 // === БЛОК 3: ПЕРЕМЕННЫЕ ИГРОКА И СУЩНОСТЕЙ ===
-let player = { x: 0, y: 0, size: 22, speed: 3 }; // Объект котика: стартовые координаты, размер (22 пикселя) и скорость движения
+let player = new Player(); // Создаем котика по новому чертежу из класса Player
 let keys = {}; // Сюда мы будем записывать, какие клавиши зажаты в данный момент
 let fishList = []; // Список (массив), где будут храниться координаты всех рыбок на уровне
 let enemies = []; // Список (массив) для хранения всех активных врагов (пылесосов)   
@@ -142,23 +142,12 @@ function checkCollision(x, y, size) {
 
 // Главная функция обновлений (расчет физики и логики, вызывается 60 раз в секунду)
 function update() {
-    let nextX = player.x; let nextY = player.y; // Создаем временные переменные для шага кота
-    
-    // Проверяем нажатые клавиши и меняем координату по вертикали (Y)
-    if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) nextY -= player.speed;
-    if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) nextY += player.speed;
-    // Если при шаге по вертикали кот не врезается в стену, то обновляем его реальную координату Y
-    if (!checkCollision(player.x, nextY, player.size)) player.y = nextY;
-    
-    // Проверяем нажатые клавиши и меняем координату по горизонтали (X)
-    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) nextX -= player.speed;
-    if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) nextX += player.speed;
-    // Если при шаге по горизонтали кот не врезается в стену, то обновляем его реальную координату X
-    if (!checkCollision(nextX, player.y, player.size)) player.x = nextX;
+    // 1. Котик сам считывает клавиши и рассчитывает свое перемещение!
+    player.move(keys);
 
-    // Сбор рыбок котиком
+    // 2. Сбор рыбок котиком
     let pCenterX = player.x + player.size / 2; let pCenterY = player.y + player.size / 2; // Находим центр кота
-    for (let i = fishList.length - 1; i >= 0; i--) { // Перебираем список рыбок с конца к началу (чтобы безопасно удалять элементы)
+    for (let i = fishList.length - 1; i >= 0; i--) { // Перебираем список рыбок с конца к началу
         let fish = fishList[i];
         let dist = Math.hypot(pCenterX - fish.x, pCenterY - fish.y); // Считаем точное расстояние между центрами кота и рыбки
         
@@ -236,19 +225,10 @@ ctx.strokeStyle = '#000000'; // Выбираем цвет обводки вра�
 ctx.lineWidth = 2; // Выбираем толщину обводки врагов
 ctx.strokeRect(enemy.x, enemy.y, enemy.size, enemy.size); //Рисуем обводку ровно по границе врагов 
 }
-// Рисуем главного героя — котика
-if (catImage.complete && catImage.naturalWidth !== 0) {
-// Если спрайт 'cat1.png' успешно загрузился в браузер — выводим картинку котика
-ctx.drawImage(catImage, player.x, player.y, player.size, player.size);
-} else {
-// Запасной вариант: если картинки нет на сервере, рисуем обычный оранжевый квадратик
-ctx.fillStyle = '#FF8000';
-ctx.fillRect(player.x, player.y, player.size, player.size);
-ctx.strokeStyle = '#000000'; // Выбираем цвет обводки игрока
-ctx.lineWidth = 2; // Выбираем толщину обводки игрока
-ctx.strokeRect(player.x, player.y, player.size, player.size); //Рисуем обводку ровно по границе игрока
-}
-}
+    // Просим котика нарисовать самого себя по правилам его класса
+    player.draw(ctx, catImage);
+} // <- Эта закрывающая фигурная скобка завершает саму функцию draw()
+
 // === БЛОК 6: СЛУШАТЕЛИ КЛАВИАТУРЫ ===
 // Когда клавиша нажимается, записываем в объект keys значение true (например: keys['w'] = true)
 window.addEventListener('keydown', (e) => { keys[e.key] = true; });
