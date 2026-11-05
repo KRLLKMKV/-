@@ -166,7 +166,7 @@ for (let r = 0; r < currentMap.length; r++) { // Бежим по строкам 
 for (let c = 0; c < currentMap[r].length; c++) { // Бежим по колонкам матрицы
 if (currentMap[r][c] === 1) { // Если в ячейке стоит 1:
 ctx.fillStyle = '#2c3e50'; // Выбираем темно-синий цвет для стен
-ctx.fillRect(c * blockSize + 6, r * blockSize + 1, blockSize - 2, blockSize - 2); // Рисуем квадрат стены 30х30
+ctx.fillRect(c * blockSize + 1, r * blockSize + 1, blockSize - 2, blockSize - 2); // Рисуем квадрат стены 30х30
 } else if (currentMap[r][c] === 3) { // Если в ячейке стоит 3 (выход):
 // Если рыба осталась — красим финиш в блекло-зеленый, если вся съедена — в ярко-зеленый
 ctx.fillStyle = fishList.length === 0 ? '#2ed573' : '#7bed9f';
