@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кошачий Лабиринт: Приключение</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-image: url('cats.png'); 
+            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .ui-panel {
+            background-color: rgba(0, 0, 0, 0.75); padding: 12px 25px; border-radius: 15px;
+            color: white; font-size: 20px; font-weight: bold; margin-bottom: 15px;
+            backdrop-filter: blur(5px); display: flex; gap: 30px; z-index: 10;
+        }
+        .ui-panel .fish-count { color: #fffa65; }
+        canvas { background-color: rgba(255, 255, 255, 0.95); border: 4px solid #333; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); display: block; }
+        .win-screen { position: absolute; background-color: rgba(0, 0, 0, 0.85); color: white; padding: 30px 50px; border-radius: 20px; text-align: center; display: none; z-index: 20; }
+        .win-screen h1 { color: #2ed573; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="ui-panel">
+        <div>Уровень: <span id="levelDisplay">1</span></div>
+        <div class="fish-count">Осталось рыбок: <span id="fishDisplay">0</span></div>
+    </div>
+
+    <canvas id="gameCanvas" width="600" height="450"></canvas>
+
+    <div class="win-screen" id="winScreen">
+        <h1>Мяу-победа!</h1>
+        <p>Вы собрали всю рыбку и обошли все пылесосы!</p>
+    </div>
+
+    <!-- Подключаем наш скрипт с игрой -->
+    <script src="game.js"></script>
+</body>
+</html>
