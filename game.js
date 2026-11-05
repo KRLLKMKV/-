@@ -166,10 +166,10 @@ for (let r = 0; r < currentMap.length; r++) { // Бежим по строкам 
 for (let c = 0; c < currentMap[r].length; c++) { // Бежим по колонкам матрицы
 if (currentMap[r][c] === 1) { // Если в ячейке стоит 1:
 ctx.fillStyle = '#269926'; // Выбираем цвет для кубиков стен
-ctx.fillRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4); // Рисуем квадрат стены 30х30
+ctx.fillRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4); // Рисуем кубики стены со сдвигом +2 и размером меньше на 4
 ctx.strokeStyle = '#000000'; // Выбираем цвет для обводки границ кубиков стен
 ctx.lineWidth = 2; // Выбираем толщину линии обводки границ кубиков стен (единица измерения - пиксели)
-ctx.strokeRect(c * blockSize + 2, r * blockSize +2, blockSize - 4, blockSize - 4); //здесь контур обводки рисуется ровно по границе кубика
+ctx.strokeRect(c * blockSize + 2, r * blockSize +2, blockSize - 4, blockSize - 4); //Рисуем контур ровно по границам кубиков стен
 } else if (currentMap[r][c] === 3) { // Если в ячейке стоит 3 (выход):
 // Если рыба осталась — красим финиш в блекло-зеленый, если вся съедена — в ярко-зеленый
 ctx.fillStyle = fishList.length === 0 ? '#2ed573' : '#7bed9f';
@@ -194,6 +194,9 @@ ctx.closePath(); // Заканчиваем рисование фигуры
 for (let enemy of enemies) {
 ctx.fillStyle = '#FF0000'; // Выбираем красный цвет для врагов
 ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size); // Рисуем квадрат врага
+ctx.strokeStyle = '#000000'; // Выбираем цвет обводки врагов
+ctx.lineWidth = 1; // Выбираем толщину обводки врагов
+ctx.strokeRect(enemy.x, enemy.y, enemy.size, enemy.size); //Рисуем обводку ровно по границе врагов 
 }
 // Рисуем главного героя — котика
 if (catImage.complete && catImage.naturalWidth !== 0) {
