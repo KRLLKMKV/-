@@ -86,9 +86,9 @@ function parseMap(levelStr) {
                 enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: Math.random() > 0.5 ? 1.5 : -1.5, dy: 0 }); 
             }
             else if (char === 'V') {
-                rowArr.push(0)
-                 enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5, });
-            else rowArr.push(0); // Любые другие символы (или нули) записываем как обычный пустой коридор
+                rowArr.push(0);
+                 enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5 });
+            else { rowArr.push(0); // Любые другие символы (или нули) записываем как обычный пустой коридор
             }
         }
         map.push(rowArr); // Добавляем готовую строку в общую карту
