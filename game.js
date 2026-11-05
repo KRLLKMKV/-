@@ -166,10 +166,10 @@ for (let r = 0; r < currentMap.length; r++) { // Бежим по строкам 
 for (let c = 0; c < currentMap[r].length; c++) { // Бежим по колонкам матрицы
 if (currentMap[r][c] === 1) { // Если в ячейке стоит 1:
 ctx.fillStyle = '#269926'; // Выбираем цвет для кубиков стен
-ctx.fillRect(c * blockSize + 1, r * blockSize + 1, blockSize - 2, blockSize - 2); // Рисуем квадрат стены 30х30
+ctx.fillRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4); // Рисуем квадрат стены 30х30
 ctx.strokeStyle = '#000000'; // Выбираем цвет для обводки границ кубиков стен
 ctx.lineWidth = 2; // Выбираем толщину линии обводки границ кубиков стен (единица измерения - пиксели)
-ctx.strokeRect(c * blockSize + 1, r * blockSize +1, blockSize - 2, blockSize - 2); //здесь контур обводки рисуется ровно по границе кубика
+ctx.strokeRect(c * blockSize + 2, r * blockSize +2, blockSize - 4, blockSize - 4); //здесь контур обводки рисуется ровно по границе кубика
 } else if (currentMap[r][c] === 3) { // Если в ячейке стоит 3 (выход):
 // Если рыба осталась — красим финиш в блекло-зеленый, если вся съедена — в ярко-зеленый
 ctx.fillStyle = fishList.length === 0 ? '#2ed573' : '#7bed9f';
