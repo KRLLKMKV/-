@@ -80,10 +80,10 @@ function parseMap(levelStr) {
                 // И добавляем рыбку в список объектов, высчитывая её точные пиксельные координаты по центру клетки
                 fishList.push({ x: c * blockSize + 15, y: i * blockSize + 15, radius: 6 }); 
             }
-            else if (char === 'E') { 
-                rowArr.push(0); // В сетку пишем пустоту
-                // Создаем врага: задаем координаты, размер и случайное направление движения влево или вправо по горизонтали
-                enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: Math.random() > 0.5 ? 1.5 : -1.5, dy: 0 }); 
+             else if (char === 'E') { 
+                rowArr.push(0); 
+                // Вызываем переименованный класс через ключевое слово new
+                enemies.push(new HorizontalEnemy(c, i)); 
             }
             else if (char === 'V') {
                 rowArr.push(0);
