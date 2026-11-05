@@ -206,6 +206,9 @@ ctx.drawImage(catImage, player.x, player.y, player.size, player.size);
 // Запасной вариант: если картинки нет на сервере, рисуем обычный оранжевый квадратик
 ctx.fillStyle = '#FF8000';
 ctx.fillRect(player.x, player.y, player.size, player.size);
+ctx.strokeStyle = '#000000'; // Выбираем цвет обводки игрока
+ctx.lineWidth = 2; // Выбираем толщину обводки игрока
+ctx.strokeRect(enemy.x, enemy.y, enemy.size, enemy.size); //Рисуем обводку ровно по границе игрока
 }
 }
 // === БЛОК 6: СЛУШАТЕЛИ КЛАВИАТУРЫ ===
