@@ -195,7 +195,7 @@ for (let enemy of enemies) {
 ctx.fillStyle = '#FF0000'; // Выбираем красный цвет для врагов
 ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size); // Рисуем квадрат врага
 ctx.strokeStyle = '#000000'; // Выбираем цвет обводки врагов
-ctx.lineWidth = 1; // Выбираем толщину обводки врагов
+ctx.lineWidth = 2; // Выбираем толщину обводки врагов
 ctx.strokeRect(enemy.x, enemy.y, enemy.size, enemy.size); //Рисуем обводку ровно по границе врагов 
 }
 // Рисуем главного героя — котика
