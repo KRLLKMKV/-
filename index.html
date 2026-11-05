@@ -1,44 +1,105 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!DOCTYPE html> <!-- Подсказка для браузера, что это современный документ стандарта HTML5 -->
+<html lang="ru"> <!-- Начало веб-страницы, указываем русский язык для корректной работы браузеров -->
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кошачий Лабиринт: Приключение</title>
+    <meta charset="UTF-8"> <!-- Задаем кодировку UTF-8, чтобы русские буквы (ц, ы, ф, в) отображались правильно, а не кракозябрами -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Настройка для мобильных устройств, чтобы сайт не сжимался в микроскопическую точку -->
+    <title>Кошачий Лабиринт: Приключение</title> <!-- Текст, который пишется на вкладке вверху браузера -->
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* === БЛОК СТИЛЕЙ (CSS) — ОТВЕЧАЕТ ЗА КРАСОТУ И ВНЕШНИЙ ВИД === */
+
+        * { 
+            margin: 0; padding: 0; /* Сбрасываем стандартные отступы браузера в ноль, чтобы всё прилегало ровно */
+            box-sizing: border-box; /* Заставляем браузер включать рамки в общую ширину элементов, чтобы верстка не разъезжалась */
+        }
+
         body {
+            /* Задаем фоновую картинку для всего сайта */
             background-image: url('cats.png'); 
-            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
-            height: 100vh; width: 100vw; overflow: hidden;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-size: cover; /* Растягиваем фон так, чтобы он полностью закрывал весь экран */
+            background-position: center; /* Центрируем фоновую картинку */
+            background-repeat: no-repeat; /* Запрещаем картинке размножаться плиткой, если экран слишком большой */
+            background-attachment: fixed; /* Фиксируем фон: если бы страница скроллилась, фон оставался бы на месте */
+            
+            height: 100vh; width: 100vw; /* Растягиваем страницу ровно на 100% высоты и ширины видимого экрана */
+            overflow: hidden; /* Прячем полосы прокрутки (скроллбары), чтобы сайт не дергался */
+            
+            /* Технология Flexbox — автоматически выравнивает всё содержимое (панель, игру) строго по центру экрана */
+            display: flex; 
+            flex-direction: column; /* Располагаем элементы друг под другом (сверху панель, снизу холст игры) */
+            justify-content: center; /* Центрируем по вертикали */
+            align-items: center; /* Центрируем по горизонтали */
+            
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Задаем красивый современный шрифт для текстов */
         }
+
+        /* Настройка верхней плашки со счетом и уровнем */
         .ui-panel {
-            background-color: rgba(0, 0, 0, 0.75); padding: 12px 25px; border-radius: 15px;
-            color: white; font-size: 20px; font-weight: bold; margin-bottom: 15px;
-            backdrop-filter: blur(5px); display: flex; gap: 30px; z-index: 10;
+            background-color: rgba(0, 0, 0, 0.75); /* Делаем черный фон, но прозрачный на 75%, чтобы сквозь него слегка просвечивали котики */
+            padding: 12px 25px; /* Внутренние отступы плашки: 12 пикселей сверху/снизу и 25 слева/справа */
+            border-radius: 15px; /* Закругляем углы плашки, делая их мягкими */
+            color: white; /* Цвет текста внутри плашки — белый */
+            font-size: 20px; /* Размер букв */
+            font-weight: bold; /* Делаем текст жирным */
+            margin-bottom: 15px; /* Делаем отступ в 15 пикселей снизу, чтобы плашка не прилипала к игровому холсту */
+            backdrop-filter: blur(5px); /* Эффект матового стекла — красиво размывает фоновые картинки под плашкой */
+            display: flex; gap: 30px; /* Выстраиваем "Уровень" и "Рыбок" в одну линию с расстоянием 30 пикселей между ними */
+            z-index: 10; /* Слой наложения: гарантирует, что плашка всегда будет поверх игры и не утонет под текстурами */
         }
-        .ui-panel .fish-count { color: #fffa65; }
-        canvas { background-color: rgba(255, 255, 255, 0.95); border: 4px solid #333; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); display: block; }
-        .win-screen { position: absolute; background-color: rgba(0, 0, 0, 0.85); color: white; padding: 30px 50px; border-radius: 20px; text-align: center; display: none; z-index: 20; }
-        .win-screen h1 { color: #2ed573; margin-bottom: 15px; }
+
+        /* Отдельно красим счетчик рыбок внутри плашки */
+        .ui-panel .fish-count { 
+            color: #fffa65; /* Задаем рыбкам аппетитный неон-желтый цвет */
+        }
+
+        /* Настройка игрового холста (Canvas), где JavaScript рисует лабиринт */
+        canvas { 
+            background-color: rgba(255, 255, 255, 0.95); /* Белый фон холста, слегка прозрачный */
+            border: 4px solid #333; /* Толстая темно-серая рамка вокруг игры в 4 пикселя */
+            border-radius: 10px; /* Закругляем края самого игрового поля */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Добавляем красивую мягкую тень под игрой для эффекта объема */
+            display: block; /* Убираем лишние мелкие отступы снизу холста, которые браузер добавляет по умолчанию */
+        }
+
+        /* Окно, которое появляется при выигрыше */
+        .win-screen { 
+            position: absolute; /* Вырываем окно из общего порядка, чтобы оно могло висеть прямо по центру поверх игры */
+            background-color: rgba(0, 0, 0, 0.85); /* Плотный черный прозрачный фон */
+            color: white; 
+            padding: 30px 50px; 
+            border-radius: 20px; 
+            text-align: center; /* Выравниваем весь текст внутри окна по центру */
+            display: none; /* !!! Важно: изначально прячем это окно (оно скрыто, пока JS не переключит его на 'block') */
+            z-index: 20; /* Задаем самый высокий слой, чтобы окно перекрывало вообще всё на сайте */
+        }
+
+        /* Заголовок внутри экрана победы */
+        .win-screen h1 { 
+            color: #2ed573; /* Делаем надпись "Мяу-победа!" сочным зеленым цветом */
+            margin-bottom: 15px; /* Отступ под заголовком перед описанием */
+        }
     </style>
 </head>
 <body>
 
+    <!-- Верхняя информационная панель -->
     <div class="ui-panel">
+        <!-- В теги <span> мы обернули сами циферки, чтобы JavaScript мог находить их по ID и менять прямо во время игры -->
         <div>Уровень: <span id="levelDisplay">1</span></div>
         <div class="fish-count">Осталось рыбок: <span id="fishDisplay">0</span></div>
     </div>
 
+    <!-- Игровой холст размером 600 на 450 пикселей. На нем JS будет рисовать кота и пылесосы -->
     <canvas id="gameCanvas" width="600" height="450"></canvas>
 
+    <!-- Всплывающий экран победы (по умолчанию скрыт стилем display: none) -->
     <div class="win-screen" id="winScreen">
         <h1>Мяу-победа!</h1>
         <p>Вы собрали всю рыбку и обошли все пылесосы!</p>
     </div>
 
-    <!-- Подключаем наш скрипт с игрой -->
+    <!-- Связующий мост: загружаем внешний файл с логикой. Браузер прочитает HTML, а затем выполнит код из game.js -->
     <script src="game.js"></script>
+
 </body>
 </html>
