@@ -146,16 +146,50 @@ function update() {
     player.move(keys);
 
     // 2. Сбор рыбок котиком
-    let pCenterX = player.x + player.size / 2; let pCenterY = player.y + player.size / 2; // Находим центр кота
-    for (let i = fishList.length - 1; i >= 0; i--) { // Перебираем список рыбок с конца к началу
+    let pCenterX = player.x + player.size / 2; 
+    let pCenterY = player.y + player.size / 2; // Находим центр кота
+    
+    for (let i = fishList.length - 1; i >= 0; i--) { // Перебираем список рыбок
         let fish = fishList[i];
-        let dist = Math.hypot(pCenterX - fish.x, pCenterY - fish.y); // Считаем точное расстояние между центрами кота и рыбки
+        let dist = Math.hypot(pCenterX - fish.x, pCenterY - fish.y); // Расстояние до рыбки
         
-        if (dist < player.size / 2 + fish.radius) { // Если круги кота и рыбки пересеклись:
-            fishList.splice(i, 1); // Удаляем рыбку из массива данных
-            fishDisplay.textContent = fishList.length; // Обновляем счетчик рыбок на экране сайта
+        if (dist < player.size / 2 + fish.radius) {
+            fishList.splice(i, 1); // Удаляем рыбку из массива
+            fishDisplay.textContent = fishList.length; // Обновляем счетчик на экране
+        }
+    } // Конец цикла сбора рыбок
+
+    // 3. Движение роботов-пылесосов (врагов) — ТЕПЕРЬ ОН СНАРУЖИ
+    for (let enemy of enemies) {
+        let nextEx = enemy.x + (enemy.dx || 0); 
+        let nextEy = enemy.y + (enemy.dy || 0);
+
+        if (checkCollision(nextEx, nextEy, enemy.size)) {
+            if (enemy.dx) enemy.dx = -enemy.dx;
+            if (enemy.dy) enemy.dy = -enemy.dy;
+        } else {
+            enemy.x = nextEx;
+            enemy.y = nextEy;
+        }
+
+        // Проверка столкновения кота с врагом
+        if (player.x < enemy.x + enemy.size &&
+            player.x + player.size > enemy.x &&
+            player.y < enemy.y + enemy.size &&
+            player.y + player.size > enemy.y) {
+            resetPlayerPosition(); // Телепорт на старт
+        }
+    } // Конец цикла врагов
+
+    // 4. Проверка перехода на следующий уровень
+    if (fishList.length === 0) { 
+        let centerC = Math.floor(pCenterX / blockSize); 
+        let centerR = Math.floor(pCenterY / blockSize); 
+        if (currentMap[centerR] && currentMap[centerR][centerC] === 3) {
+            initLevel(currentLevelIndex + 1);
         }
     }
+} // Конец функции update
 
     // Движение роботов-пылесосов (врагов)
     for (let enemy of enemies) {
