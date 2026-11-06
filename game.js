@@ -60,13 +60,13 @@ let currentMap = []; // Двумерный массив, в который пр�
 // === БЛОК 4: ФУНКЦИИ ЛОГИКИ ИГРЫ ===
 
 // Функция превращает длинную строку символов в удобную сетку (массив массивов)
-function parseMap(leelStr) {
+function parseMap(levelStr) {
     let map = []; // Создаем пустую сетку
     fishList = []; // Очищаем список рыбок перед стартом нового уровня
     enemies = []; // Очищаем список врагов перед стартом нового уровня
     
     for (let i = 0; i < 15; i++) { // Цикл идет сверху вниз по строкам (всего 15 строк)
-        let rowStr = leelStr.substring(i * 20, (i + 1) * 20); // Отрезаем кусок из 20 символов для текущей строки
+        let rowStr = levelStr.substring(i * 20, (i + 1) * 20); // Отрезаем кусок из 20 символов для текущей строки
         let rowArr = []; // Создаем массив для ячеек этой строки
         
         for (let c = 0; c < rowStr.length; c++) { // Цикл идет слева направо по символам строки (20 ячеек)
@@ -143,54 +143,45 @@ function checkCollision(x, y, size) {
 
 // Главная функция обновлений (расчет физики и логики, вызывается 60 раз в секунду)
 function update() {
-    // 1. Котик сам считывает клавиши и рассчитывает свое перемещение!
+    // 1. Движение котика
     player.move(keys);
 
-    // 2. Сбор рыбок котиком
+    // 2. Сбор рыбок
     let pCenterX = player.x + player.size / 2; 
-    let pCenterY = player.y + player.size / 2; // Находим центр кота
+    let pCenterY = player.y + player.size / 2;
     
-    for (let i = fishList.length - 1; i >= 0; i--) { // Перебираем список рыбок
+    for (let i = fishList.length - 1; i >= 0; i--) {
         let fish = fishList[i];
-        let dist = Math.hypot(pCenterX - fish.x, pCenterY - fish.y); // Расстояние до рыбки
+        let dist = Math.hypot(pCenterX - fish.x, pCenterY - fish.y);
         
         if (dist < player.size / 2 + fish.radius) {
-            fishList.splice(i, 1); // Удаляем рыбку из массива
-            fishDisplay.textContent = fishList.length; // Обновляем счетчик на экране
+            fishList.splice(i, 1);
+            fishDisplay.textContent = fishList.length;
         }
-    } // Конец цикла сбора рыбок
+    }
 
-    // 3. Движение роботов-пылесосов (врагов) — ТЕПЕРЬ ОН СНАРУЖИ
+    // 3. Движение врагов (роботов-пылесосов) и проверка столкновений
     for (let enemy of enemies) {
-        let nextEx = enemy.x + (enemy.dx || 0); 
-        let nextEy = enemy.y + (enemy.dy || 0);
+        enemy.move();
 
-        if (checkCollision(nextEx, nextEy, enemy.size)) {
-            if (enemy.dx) enemy.dx = -enemy.dx;
-            if (enemy.dy) enemy.dy = -enemy.dy;
-        } else {
-            enemy.x = nextEx;
-            enemy.y = nextEy;
-        }
-
-        // Проверка столкновения кота с врагом
         if (player.x < enemy.x + enemy.size &&
             player.x + player.size > enemy.x &&
             player.y < enemy.y + enemy.size &&
             player.y + player.size > enemy.y) {
-            resetPlayerPosition(); // Телепорт на старт
+            resetPlayerPosition();
         }
-    } // Конец цикла врагов
+    }
 
     // 4. Проверка перехода на следующий уровень
-    if (fishList.length === 0) { 
-        let centerC = Math.floor(pCenterX / blockSize); 
-        let centerR = Math.floor(pCenterY / blockSize); 
+    if (fishList.length === 0) {
+        let centerC = Math.floor(pCenterX / blockSize);
+        let centerR = Math.floor(pCenterY / blockSize);
+
         if (currentMap[centerR] && currentMap[centerR][centerC] === 3) {
             initLevel(currentLevelIndex + 1);
         }
     }
-} // Конец функции update
+}
 
     // Движение роботов-пылесосов (врагов)
     for (let enemy of enemies) {
