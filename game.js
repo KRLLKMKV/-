@@ -42,7 +42,7 @@ const levelStrings = [
     "111.1.111.1.111111.1" +
     "1.....1.1...1...E1.1" +
     "1.11111.11111.11.1.1" +
-    "1F1...........1V.1.1" +
+    "1F1...........1.1.1" +
     "1.1.111111111.1.11.1" +
     "1E..1...F...1...1..1" +
     "11111.11111.11111.11" +
@@ -54,19 +54,19 @@ const levelStrings = [
     "11111111111111111111" // Тут знаков нет т.к. этот уровень последний в списке
 ];
 
-let currentLevelIndex = 0; // Переменная для отслеживания текущего номера уровня
+let currentLeelIndex = 0; // Переменная для отслеживания текущего номера уровня
 let currentMap = []; // Двумерный массив, в который превратится текстовая строка уровня после обработки
 
 // === БЛОК 4: ФУНКЦИИ ЛОГИКИ ИГРЫ ===
 
 // Функция превращает длинную строку символов в удобную сетку (массив массивов)
-function parseMap(levelStr) {
+function parseMap(leelStr) {
     let map = []; // Создаем пустую сетку
     fishList = []; // Очищаем список рыбок перед стартом нового уровня
     enemies = []; // Очищаем список врагов перед стартом нового уровня
     
     for (let i = 0; i < 15; i++) { // Цикл идет сверху вниз по строкам (всего 15 строк)
-        let rowStr = levelStr.substring(i * 20, (i + 1) * 20); // Отрезаем кусок из 20 символов для текущей строки
+        let rowStr = leelStr.substring(i * 20, (i + 1) * 20); // Отрезаем кусок из 20 символов для текущей строки
         let rowArr = []; // Создаем массив для ячеек этой строки
         
         for (let c = 0; c < rowStr.length; c++) { // Цикл идет слева направо по символам строки (20 ячеек)
@@ -85,10 +85,10 @@ function parseMap(levelStr) {
                 // Вызываем переименованный класс через ключевое слово new
                 enemies.push(new HorizontalEnemy(c, i)); 
             }
-            else if (char === 'V') {
-                rowArr.push(0);
-                enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5 });
-            }
+            else if ( char === 'V') {
+    rowArr. push( 0);
+    enemies. push( new VerticalEnemy( c, i));
+}
             else {
                 rowArr.push(0);
             }
@@ -159,7 +159,7 @@ function update() {
 
     // Движение роботов-пылесосов (врагов)
     for (let enemy of enemies) {
-        let nextEx = enemy.x + enemy.dx; let nextEy = enemy.y + enemy.dy; // Просчитываем следующий шаг врага
+        enemy.move()
         
         if (checkCollision(nextEx, nextEy, enemy.size)) { 
             // Если на пути врага стена — разворачиваем его скорость в обратную сторону (меняем плюс на минус)
@@ -170,10 +170,14 @@ function update() {
         }
         
         // Проверка столкновения кота с врагом (пересечение двух квадратов)
-        if (player.x < enemy.x + enemy.size && player.x + player.size > enemy.x && player.y < enemy.y + enemy.size && player.y + player.size > enemy.y) {
-            resetPlayerPosition(); // Если врезались в пылесос — котик телепортируется на старт уровня
-        }
+       if (player.x < enemy.x + enemy.size && 
+        player.x + player.size > enemy.x && 
+        player.y < enemy.y + enemy.size && 
+        player.y + player.size > enemy.y) {
+        
+        resetPlayerPosition(); // Если врезались в пылесос — котик телепортируется на старт уровня
     }
+}
 
     // Проверка перехода на следующий уровень
     if (fishList.length === 0) { // Если котик съел ВСЮ рыбу на уровне:
