@@ -85,9 +85,10 @@ function parseMap(leelStr) {
                 // Вызываем переименованный класс через ключевое слово new
                 enemies.push(new HorizontalEnemy(c, i)); 
             }
-            else if ( char === 'V') {
-    rowArr. push( 0);
-    enemies. push( new VerticalEnemy( c, i));
+            // Внутри функции parseMap для буквы V должно быть:
+else if ( char === 'V') {
+    rowArr.push(0);
+    enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5 });
 }
             else {
                 rowArr.push(0);
