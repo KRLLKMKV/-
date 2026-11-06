@@ -1,20 +1,15 @@
-// === БЛОК 1: ПОИСК ЭЛЕМЕНТОВ НА СТРАНИЦЕ И НАСТРОЙКИ СЕТКИ ===
-const canvas = document.getElementById('gameCanvas'); // Находим холст игры в HTML по его ID
-const ctx = canvas.getContext('2d'); // Включаем режим 2D-рисования на холсте
-const levelDisplay = document.getElementById('levelDisplay'); // Находим текстовый блок для вывода номера уровня
-const fishDisplay = document.getElementById('fishDisplay'); // Находим текстовый блок для вывода количества оставшихся рыбок
-const winScreen = document.getElementById('winScreen'); // Находим блок экрана победы
-const blockSize = 30; // Задаем размер одной клетки лабиринта в пикселях (30х30)
-
-// === БЛОК 2: ЗАГРУЗКА СПРАЙТОВ ===
-const catImage = new Image(); // Создаем виртуальный объект изображения в памяти
-catImage.src = 'cat1.png'; // Указываем путь к картинке котика
-
-// === БЛОК 3: ПЕРЕМЕННЫЕ ИГРОКА И СУЩНОСТЕЙ ===
-let player = new Player(); // Создаем котика по новому чертежу из класса Player
-let keys = {}; // Сюда мы будем записывать, какие клавиши зажаты в данный момент
-let fishList = []; // Список (массив), где будут храниться координаты всех рыбок на уровне
-let entities = []; // Список (массив) для хранения всех активных сущностей (пылесосов)   
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const levelDisplay = document.getElementById('levelDisplay');
+const fishDisplay = document.getElementById('fishDisplay');
+const winScreen = document.getElementById('winScreen');
+const blockSize = 30;
+const catImage = new Image();
+catImage.src = 'cat1.png';
+let player = new Player();
+let keys = {};
+let fishList = [];
+let entities = [];
 
 // Длинные текстовые строчки — это зашифрованные карты уровней (15 строк по 20 символов)
 // '1' — стена, '2' — старт кота, '3' — закрытый выход, 'F' — рыбка, 'E' — красный кубик, '0' — пустота
