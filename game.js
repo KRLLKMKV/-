@@ -14,7 +14,7 @@ catImage.src = 'cat1.png'; // Указываем путь к картинке к
 let player = new Player(); // Создаем котика по новому чертежу из класса Player
 let keys = {}; // Сюда мы будем записывать, какие клавиши зажаты в данный момент
 let fishList = []; // Список (массив), где будут храниться координаты всех рыбок на уровне
-let enemies = []; // Список (массив) для хранения всех активных врагов (пылесосов)   
+let entities = []; // Список (массив) для хранения всех активных врагов (пылесосов)   
 
 // Длинные текстовые строчки — это зашифрованные карты уровней (15 строк по 20 символов)
 // '1' — стена, '2' — старт кота, '3' — закрытый выход, 'F' — рыбка, 'E' — робот-пылесос, '0' — пустота
@@ -63,7 +63,7 @@ let currentMap = []; // Двумерный массив, в который пр�
 function parseMap(levelStr) {
     let map = []; // Создаем пустую сетку
     fishList = []; // Очищаем список рыбок перед стартом нового уровня
-    enemies = []; // Очищаем список врагов перед стартом нового уровня
+    entities = []; // Очищаем список врагов перед стартом нового уровня
     
     for (let i = 0; i < 15; i++) { // Цикл идет сверху вниз по строкам (всего 15 строк)
         let rowStr = levelStr.substring(i * 20, (i + 1) * 20); // Отрезаем кусок из 20 символов для текущей строки
@@ -83,12 +83,12 @@ function parseMap(levelStr) {
              else if (char === 'E') { 
                 rowArr.push(0); 
                 // Вызываем переименованный класс через ключевое слово new
-                enemies.push(new HorizontalEnemy(c, i)); 
+                entities.push(new HorizontalRedCube(c, i)); 
             }
             // Внутри функции parseMap для буквы V должно быть:
 else if ( char === 'V') {
     rowArr.push(0);
-    enemies.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5 });
+    entities.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 20, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5 });
 }
             else {
                 rowArr.push(0);
@@ -161,13 +161,13 @@ function update() {
     }
 
     // 3. Движение врагов (роботов-пылесосов) и проверка столкновений
-    for (let enemy of enemies) {
-        enemy.move();
+    for (let entity of entities) {
+        entity.move();
 
-        if (player.x < enemy.x + enemy.size &&
-            player.x + player.size > enemy.x &&
-            player.y < enemy.y + enemy.size &&
-            player.y + player.size > enemy.y) {
+        if (player.x < entity.x + entity.size &&
+            player.x + player.size > entity.x &&
+            player.y < entity.y + entity.size &&
+            player.y + player.size > entity.y) {
             resetPlayerPosition();
         }
     }
@@ -184,22 +184,22 @@ function update() {
 }
 
     // Движение роботов-пылесосов (врагов)
-    for (let enemy of enemies) {
-        enemy.move()
+    for (let entity of entities) {
+        entity.move()
         
-        if (checkCollision(nextEx, nextEy, enemy.size)) { 
+        if (checkCollision(nextEx, nextEy, entity.size)) { 
             // Если на пути врага стена — разворачиваем его скорость в обратную сторону (меняем плюс на минус)
-            enemy.dx = -enemy.dx; enemy.dy = -enemy.dy; 
+            entity.dx = -entity.dx; entity.dy = -entity.dy; 
         } else { 
             // Если путь свободен — двигаем врага вперед
-            enemy.x = nextEx; enemy.y = nextEy; 
+            entity.x = nextEx; entity.y = nextEy; 
         }
         
         // Проверка столкновения кота с врагом (пересечение двух квадратов)
-       if (player.x < enemy.x + enemy.size && 
-        player.x + player.size > enemy.x && 
-        player.y < enemy.y + enemy.size && 
-        player.y + player.size > enemy.y) {
+       if (player.x < entity.x + entity.size && 
+        player.x + player.size > entity.x && 
+        player.y < entity.y + entity.size && 
+        player.y + player.size > entity.y) {
         
         resetPlayerPosition(); // Если врезались в пылесос — котик телепортируется на старт уровня
     }
@@ -248,12 +248,12 @@ ctx.fill(); // Закрашиваем её форму
 ctx.closePath(); // Заканчиваем рисование фигуры
 }
 // Рисуем врагов (красные кубики)
-for (let enemy of enemies) {
+for (let entity of entities) {
 ctx.fillStyle = '#FF0000'; // Выбираем красный цвет для врагов
-ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size); // Рисуем квадрат врага
+ctx.fillRect(entity.x, entity.y, entity.size, entity.size); // Рисуем квадрат врага
 ctx.strokeStyle = '#000000'; // Выбираем цвет обводки врагов
 ctx.lineWidth = 2; // Выбираем толщину обводки врагов
-ctx.strokeRect(enemy.x, enemy.y, enemy.size, enemy.size); //Рисуем обводку ровно по границе врагов 
+ctx.strokeRect(entity.x, entity.y, entity.size, entity.size); //Рисуем обводку ровно по границе врагов 
 }
     // Просим котика нарисовать самого себя по правилам его класса
     player.draw(ctx, catImage);
