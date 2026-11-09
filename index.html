@@ -750,4 +750,489 @@ const ctx = canvas.getContext('2d');
 const defaultLevels = [
     "111111111111111111111111" + "12...........1.......1" + "1.1111111111.1.1111111.1" + "1.1........1.1.1.....1" + "1.1.F......1.1.1.F...1" + "1.1.11111111.1.11111.1" + "1.1........1...1....11" + "1.11111111.11111.1..11" + "1.1........1.....1....1" + "1.1.V......1.V...1.V..1" + "1.1........1.....1....1" + "1.F........1..E..1...31" + "111111111111111111111111",
     "111111111111111111111111" + "12.1...1...1...1...1..1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.F.1.F.1.F.1.F.1.F.1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.V.1.V.1.V.1.V.1.V.1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1" + "1.F.1.E.1.E.1.E.1.E.1.31" + "111111111111111111111111",
-    "111111111111111111111111" + "12....................1" + "1.111111.111111.11111.1" + "1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.
+    "111111111111111111111111" + "12....................1" + "1.111111.111111.11111.1" + "1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.1.V..1.1" + "1.1....1.1....1.1....1.1" + "1.111111.111111.11111.1" + "1.....................1" + "1.111111.111111.11111.1" + "1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.1.V..1.1" + "1.F....1.E....1.E...1.31" + "111111111111111111111111",
+    "111111111111111111111111" + "12....................1" + "1.1111.11111.11111.11.1" + "1.1...1.1...1.1...1.1.1" + "1.1.V.1.1.V.1.1.V.1.1.1" + "1.1...1.1...1.1...1.1.1" + "1.1111.11111.11111.11.1" + "1.....................1" + "1.1111.11111.11111.11.1" + "1.1...1.1...1.1...1.1.1" + "1.1.V.1.1.V.1.1.V.1.1.1" + "1.F...1.E...1.E...1..31" + "111111111111111111111111"
+];
+
+let customLevels = JSON.parse(localStorage.getItem('customLevels') || '[]');
+let allLevels = [...defaultLevels, ...customLevels];
+
+let player = { size: 32, speed: 3, x: 0, y: 0, walkCycle: 0, facing: 1, hitTimer: 0 };
+let keys = {};
+let fishList = [], entities = [], particles = [];
+let currentLevelIndex = 0, currentMap = [];
+
+// === ИГРОВАЯ ЛОГИКА ===
+function parseMap(levelStr) {
+    let map = []; fishList = []; entities = [];
+    for (let i = 0; i < ROWS; i++) {
+        let rowStr = levelStr.substring(i * COLS, (i + 1) * COLS);
+        let rowArr = [];
+        for (let c = 0; c < COLS; c++) {
+            let char = rowStr[c];
+            if (char === '1') rowArr.push(1);
+            else if (char === '2') rowArr.push(2);
+            else if (char === '3') rowArr.push(3);
+            else if (char === 'F') { rowArr.push(0); fishList.push({ x: c * blockSize + 20, y: i * blockSize + 20, radius: 8, bob: Math.random() * Math.PI }); } 
+            else if (char === 'E') { rowArr.push(0); entities.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 30, dx: Math.random() > 0.5 ? 1.5 : -1.5, dy: 0, type: 'E' }); } 
+            else if (char === 'V') { rowArr.push(0); entities.push({ x: c * blockSize + 5, y: i * blockSize + 5, size: 30, dx: 0, dy: Math.random() > 0.5 ? 1.5 : -1.5, type: 'V' }); } 
+            else rowArr.push(0);
+        }
+        map.push(rowArr);
+    }
+    return map;
+}
+
+function initLevel(index) {
+    if (index >= allLevels.length) {
+        document.getElementById('winOverlay').classList.add('active');
+        playSound('win');
+        return;
+    }
+    currentLevelIndex = index;
+    document.getElementById('levelDisplay').textContent = currentLevelIndex + 1;
+    currentMap = parseMap(allLevels[currentLevelIndex]);
+    document.getElementById('fishDisplay').textContent = fishList.length;
+    player.x = 0; player.y = 0; player.hitTimer = 0;
+    resetPlayerPosition();
+    if (index === 0 && !localStorage.getItem('tutorialSeen')) {
+        document.getElementById('tutorialOverlay').classList.add('active');
+    }
+}
+
+function resetPlayerPosition() {
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (currentMap[r][c] === 2) {
+                player.x = c * blockSize + (blockSize - player.size) / 2;
+                player.y = r * blockSize + (blockSize - player.size) / 2;
+            }
+        }
+    }
+}
+
+function checkCollision(x, y, size) {
+    let corners = [{x, y}, {x: x+size, y}, {x, y: y+size}, {x: x+size, y: y+size}];
+    for (let corner of corners) {
+        let c = Math.floor(corner.x / blockSize);
+        let r = Math.floor(corner.y / blockSize);
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS || currentMap[r][c] === 1) return true;
+    }
+    return false;
+}
+
+function spawnParticles(x, y, color) {
+    for(let i=0; i<8; i++) {
+        particles.push({
+            x, y, 
+            vx: (Math.random() - 0.5) * 6, 
+            vy: (Math.random() - 0.5) * 6, 
+            life: 1.0, 
+            color
+        });
+    }
+}
+
+function update() {
+    if (player.hitTimer > 0) player.hitTimer -= 0.016;
+
+    let nextX = player.x, nextY = player.y, isMoving = false;
+    if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) { nextY -= player.speed; isMoving = true; }
+    if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) { nextY += player.speed; isMoving = true; }
+    if (!checkCollision(player.x, nextY, player.size)) player.y = nextY;
+    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) { nextX -= player.speed; isMoving = true; player.facing = -1; }
+    if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) { nextX += player.speed; isMoving = true; player.facing = 1; }
+    if (!checkCollision(nextX, player.y, player.size)) player.x = nextX;
+
+    if (isMoving) player.walkCycle += 0.2;
+    else player.walkCycle = 0;
+
+    let pCenterX = player.x + player.size / 2;
+    let pCenterY = player.y + player.size / 2;
+
+    for (let i = fishList.length - 1; i >= 0; i--) {
+        let fish = fishList[i];
+        fish.bob += 0.1;
+        let dist = Math.hypot(pCenterX - fish.x, pCenterY - (fish.y + Math.sin(fish.bob)*3));
+        if (dist < player.size / 2 + fish.radius) {
+            fishList.splice(i, 1);
+            document.getElementById('fishDisplay').textContent = fishList.length;
+            playSound('collect');
+            spawnParticles(fish.x, fish.y, '#f9e2af');
+        }
+    }
+
+    for (let entity of entities) {
+        let nextEx = entity.x + entity.dx, nextEy = entity.y + entity.dy;
+        if (checkCollision(nextEx, nextEy, entity.size)) {
+            entity.dx = -entity.dx + (Math.random() - 0.5); 
+            entity.dy = -entity.dy + (Math.random() - 0.5);
+        } else {
+            entity.x = nextEx; entity.y = nextEy;
+        }
+        
+        if (player.hitTimer <= 0 && 
+            player.x < entity.x + entity.size && player.x + player.size > entity.x &&
+            player.y < entity.y + entity.size && player.y + player.size > entity.y) {
+            playSound('die');
+            player.hitTimer = 1.0;
+            canvas.classList.add('shake');
+            setTimeout(() => canvas.classList.remove('shake'), 300);
+            resetPlayerPosition();
+        }
+    }
+
+    if (fishList.length === 0) {
+        let centerC = Math.floor(pCenterX / blockSize);
+        let centerR = Math.floor(pCenterY / blockSize);
+        if (currentMap[centerR] && currentMap[centerR][centerC] === 3) {
+            playSound('win');
+            initLevel(currentLevelIndex + 1);
+        }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (currentMap[r][c] === 1) {
+                ctx.fillStyle = '#269926';
+                ctx.fillRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4);
+                ctx.strokeStyle = '#1a6b1a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4);
+            } else if (currentMap[r][c] === 3) {
+                ctx.fillStyle = fishList.length === 0 ? '#2ed573' : '#7bed9f';
+                ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
+                if (fishList.length > 0) {
+                    ctx.fillStyle = '#11111b';
+                    ctx.font = "20px 'Pixelify Sans'";
+                    ctx.fillText('🔒', c * blockSize + 8, r * blockSize + 28);
+                }
+            }
+        }
+    }
+
+    for (let fish of fishList) {
+        let bobY = Math.sin(fish.bob) * 3;
+        ctx.beginPath();
+        ctx.ellipse(fish.x, fish.y + bobY, fish.radius + 4, fish.radius, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#f9e2af';
+        ctx.fill();
+        ctx.strokeStyle = '#11111b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    for (let entity of entities) {
+        ctx.fillStyle = '#f38ba8';
+        ctx.fillRect(entity.x, entity.y, entity.size, entity.size);
+        ctx.strokeStyle = '#11111b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(entity.x, entity.y, entity.size, entity.size);
+    }
+
+    if (player.hitTimer <= 0 || Math.floor(player.hitTimer * 10) % 2 === 0) {
+        ctx.save();
+        let cx = player.x + player.size / 2, cy = player.y + player.size / 2;
+        ctx.translate(cx, cy);
+        ctx.scale(player.facing, 1);
+        const p = player.size / 16;
+        let bob = (player.walkCycle > 0) ? Math.sin(player.walkCycle * 2) * 2 : 0;
+        ctx.translate(0, bob);
+        const frame1 = ["....OO..OO......", "...OOOOOOOOO....", "..OOOOOOOOOOOO..", "..OWWOOOOOOOWWO.", "..OOOOOPPOOOOO..", "...OOOOOOOOOO...", "....OOOOOOOO....", "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", ".TOOOOOOOOOOOOO.", ".TOOOOOOOOOOOOO.", "..OOOOOOOOOOOO..", "...OOOO..OOOO...", "...OOOO..OOOO...", "...BBBB..BBBB...", "................"];
+        const frame2 = ["....OO..OO......", "...OOOOOOOOO....", "..OOOOOOOOOOOO..", "..OWWOOOOOOOWWO.", "..OOOOOPPOOOOO..", "...OOOOOOOOOO...", "....OOOOOOOO....", "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", "..TOOOOOOOOOOOO.", "..TOOOOOOOOOOOO.", "...OOOOOOOOOOO..", "....OOOO..OOOO..", "....OOOO..OOOO..", "....BBBB..BBBB..", "................"];
+        let frame = (player.walkCycle > 0 && Math.floor(player.walkCycle * 2) % 2 === 1) ? frame2 : frame1;
+        const colors = {'O': '#FFAA33', 'T': '#E68A00', 'B': '#11111b', 'W': '#FFFFFF', 'P': '#f38ba8'};
+        let startX = -8 * p, startY = -8 * p;
+        for (let r = 0; r < 16; r++) {
+            for (let c = 0; c < 16; c++) {
+                let char = frame[r][c];
+                if (char !== '.' && colors[char]) {
+                    ctx.fillStyle = colors[char];
+                    ctx.fillRect(startX + c * p, startY + r * p, p, p);
+                }
+            }
+        }
+        ctx.restore();
+    }
+
+    for (let p of particles) {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 4, 4);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+
+// === УПРАВЛЕНИЕ И ИНТЕРФЕЙС ===
+window.addEventListener('keydown', (e) => { 
+    keys[e.key] = true; 
+    if (e.ctrlKey && e.key === 'z' && document.getElementById('editorMode').classList.contains('active')) {
+        e.preventDefault(); undoEditor();
+    }
+});
+window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+document.getElementById('btnGameMode').addEventListener('click', () => {
+    playSound('click');
+    document.getElementById('gameMode').classList.add('active');
+    document.getElementById('editorMode').classList.remove('active');
+    document.getElementById('btnGameMode').classList.add('active');
+    document.getElementById('btnEditorMode').classList.remove('active');
+    initLevel(currentLevelIndex);
+});
+
+document.getElementById('btnEditorMode').addEventListener('click', () => {
+    playSound('click');
+    document.getElementById('editorMode').classList.add('active');
+    document.getElementById('gameMode').classList.remove('active');
+    document.getElementById('btnEditorMode').classList.add('active');
+    document.getElementById('btnGameMode').classList.remove('active');
+});
+
+document.getElementById('btnPrevLevel').addEventListener('click', () => { if (currentLevelIndex > 0) { playSound('click'); initLevel(currentLevelIndex - 1); } });
+document.getElementById('btnNextLevel').addEventListener('click', () => { if (currentLevelIndex < allLevels.length - 1) { playSound('click'); initLevel(currentLevelIndex + 1); } });
+
+function closeTutorial() {
+    document.getElementById('tutorialOverlay').classList.remove('active');
+    localStorage.setItem('tutorialSeen', 'true');
+    playSound('click');
+}
+function resetGame() {
+    document.getElementById('winOverlay').classList.remove('active');
+    currentLevelIndex = 0;
+    initLevel(0);
+    playSound('click');
+}
+
+function updateLevelsList() {
+    const list = document.getElementById('levelsList');
+    list.innerHTML = '';
+    allLevels.forEach((level, idx) => {
+        const item = document.createElement('div');
+        item.className = 'level-item';
+        const isCustom = idx >= defaultLevels.length;
+        item.innerHTML = `<span>Ур. ${idx + 1} ${isCustom ? '(ваш)' : ''}</span><button onclick="playSound('click'); initLevel(${idx})">▶</button>${isCustom ? `<button class="del" onclick="playSound('click'); deleteCustomLevel(${idx - defaultLevels.length})">✕</button>` : ''}`;
+        list.appendChild(item);
+    });
+}
+
+window.deleteCustomLevel = function(idx) {
+    customLevels.splice(idx, 1);
+    localStorage.setItem('customLevels', JSON.stringify(customLevels));
+    allLevels = [...defaultLevels, ...customLevels];
+    updateLevelsList();
+    if (currentLevelIndex >= allLevels.length) currentLevelIndex = allLevels.length - 1;
+    initLevel(currentLevelIndex);
+};
+
+function exportLevels() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(customLevels));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "my_levels.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+function importLevelsPrompt() {
+    const input = prompt("Вставь JSON код уровней:");
+    if (input) {
+        try {
+            const parsed = JSON.parse(input);
+            if (Array.isArray(parsed)) {
+                customLevels = parsed;
+                localStorage.setItem('customLevels', JSON.stringify(customLevels));
+                allLevels = [...defaultLevels, ...customLevels];
+                updateLevelsList();
+                alert("Уровни успешно импортированы!");
+            }
+        } catch(e) { alert("Ошибка формата JSON!"); }
+    }
+}
+
+// === РЕДАКТОР ===
+const grid = document.getElementById('grid');
+const cells = [];
+let currentTool = 'wall';
+let isDrawing = false;
+let editorHistory = [];
+const toolToChar = {'wall': '1', 'start': '2', 'exit': '3', 'fish': 'F', 'enemy-e': 'E', 'enemy-v': 'V', 'eraser': '.'};
+
+function initGrid() {
+    grid.innerHTML = ''; cells.length = 0;
+    for (let r = 0; r < ROWS; r++) {
+        cells[r] = [];
+        for (let c = 0; c < COLS; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.r = r; cell.dataset.c = c;
+            grid.appendChild(cell);
+            cells[r][c] = cell;
+        }
+    }
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (r === 0 || r === ROWS-1 || c === 0 || c === COLS-1) setCell(r, c, 'wall');
+            else setCell(r, c, 'eraser');
+        }
+    }
+    saveEditorState();
+}
+
+function saveEditorState() {
+    let state = [];
+    for (let r = 0; r < ROWS; r++) {
+        let row = [];
+        for (let c = 0; c < COLS; c++) row.push(getCellTool(r, c));
+        state.push(row);
+    }
+    editorHistory.push(state);
+    if (editorHistory.length > 20) editorHistory.shift();
+}
+
+function undoEditor() {
+    if (editorHistory.length > 1) {
+        editorHistory.pop();
+        let state = editorHistory[editorHistory.length - 1];
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                setCell(r, c, state[r][c]);
+            }
+        }
+        playSound('click');
+    }
+}
+
+function setCell(r, c, tool) {
+    const cell = cells[r][c];
+    cell.className = 'cell ' + (tool === 'eraser' ? '' : tool);
+    cell.dataset.tool = tool;
+    cell.textContent = toolToChar[tool];
+}
+
+function getCellTool(r, c) { return cells[r][c].dataset.tool || 'eraser'; }
+function paint(r, c) { setCell(r, c, currentTool); }
+
+grid.addEventListener('mousedown', (e) => {
+    e.preventDefault(); isDrawing = true;
+    const r = +e.target.dataset.r, c = +e.target.dataset.c;
+    if (isNaN(r)) return;
+    if (e.button === 2) { const old = currentTool; currentTool = 'eraser'; paint(r, c); currentTool = old; } 
+    else paint(r, c);
+});
+grid.addEventListener('mouseover', (e) => { if (!isDrawing) return; const r = +e.target.dataset.r, c = +e.target.dataset.c; if (isNaN(r)) return; paint(r, c); });
+document.addEventListener('mouseup', () => { if (isDrawing) { isDrawing = false; saveEditorState(); } });
+grid.addEventListener('contextmenu', e => e.preventDefault());
+
+document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        playSound('click');
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTool = btn.dataset.tool;
+    });
+});
+
+document.getElementById('btnClear').addEventListener('click', () => { 
+    playSound('click');
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) setCell(r, c, 'eraser'); 
+    saveEditorState(); setEditorStatus('Очищено', 'info'); 
+});
+document.getElementById('btnFillWalls').addEventListener('click', () => { 
+    playSound('click');
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) setCell(r, c, 'wall'); 
+    saveEditorState(); setEditorStatus('Заполнено', 'info'); 
+});
+document.getElementById('btnValidate').addEventListener('click', () => {
+    playSound('click');
+    let starts = 0, exits = 0, fishes = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { 
+        const t = getCellTool(r, c); 
+        if (t === 'start') starts++; if (t === 'exit') exits++; if (t === 'fish') fishes++; 
+    }
+    const errors = [];
+    if (starts === 0) errors.push('❌ Нет старта');
+    if (exits === 0) errors.push('❌ Нет выхода');
+    if (fishes === 0) errors.push('⚠️ Нет рыбок');
+    if (errors.length) setEditorStatus(errors.join(' | '), 'err');
+    else setEditorStatus(`✅ Валиден! Рыбок: ${fishes}`, 'ok');
+});
+
+document.getElementById('btnSaveLevel').addEventListener('click', () => {
+    playSound('click');
+    let levelStr = '';
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
+    customLevels.push(levelStr);
+    localStorage.setItem('customLevels', JSON.stringify(customLevels));
+    allLevels = [...defaultLevels, ...customLevels];
+    updateLevelsList();
+    setEditorStatus('💾 Сохранён!', 'ok');
+});
+
+document.getElementById('btnTestLevel').addEventListener('click', () => {
+    playSound('click');
+    let levelStr = '';
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
+    allLevels.push(levelStr);
+    currentLevelIndex = allLevels.length - 1;
+    document.getElementById('gameMode').classList.add('active');
+    document.getElementById('editorMode').classList.remove('active');
+    document.getElementById('btnGameMode').classList.add('active');
+    document.getElementById('btnEditorMode').classList.remove('active');
+    initLevel(currentLevelIndex);
+});
+
+function setEditorStatus(msg, type) {
+    const s = document.getElementById('editorStatus');
+    s.innerHTML = msg;
+    s.className = 'editor-status ' + type;
+}
+
+function copyLevelCode() {
+    playSound('click');
+    let levelStr = '';
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
+    document.getElementById('levelCode').value = levelStr;
+    navigator.clipboard.writeText(levelStr);
+    setEditorStatus('📋 Скопировано!', 'ok');
+}
+
+function loadLevelCode() {
+    playSound('click');
+    const code = document.getElementById('levelCode').value.trim();
+    if (code.length === COLS * ROWS) {
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const char = code[r * COLS + c];
+                const tool = Object.keys(toolToChar).find(key => toolToChar[key] === char) || 'eraser';
+                setCell(r, c, tool);
+            }
+        }
+        saveEditorState();
+        setEditorStatus('📂 Загружено!', 'ok');
+    } else {
+        setEditorStatus('❌ Неверная длина кода', 'err');
+    }
+}
+
+// Запуск
+initGrid();
+updateLevelsList();
+initLevel(0);
+gameLoop();
+</script>
+</body>
+</html>
