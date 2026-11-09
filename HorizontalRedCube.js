@@ -1,7 +1,6 @@
-// === КЛАСС ДЛЯ СОЗДАНИЯ ГОРИЗОНТАЛЬНЫХ СУЩНОСТЕЙ ===
 class HorizontalRedCube {
     constructor(c, i) {
-        this.size = 20; 
+        this.size = 20;
         this.x = c * blockSize + 5;
         this.y = i * blockSize + 5;
         this.dx = Math.random() > 0.5 ? 1.5 : -1.5;
@@ -11,7 +10,6 @@ class HorizontalRedCube {
     move() {
         let nextEx = this.x + this.dx;
         let nextEy = this.y + this.dy;
-
         if (checkCollision(nextEx, nextEy, this.size)) {
             this.dx = -this.dx;
             this.dy = -this.dy;
