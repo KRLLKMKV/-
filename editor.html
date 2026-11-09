@@ -2,523 +2,382 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактор уровней - Игра "Лабиринт"</title>
+    <title>Редактор уровней — Лабиринт</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
             min-height: 100vh;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            color: white;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .container {
-            display: flex;
             gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 1400px;
         }
-
-        .editor-panel {
-            background: white;
+        .panel {
+            background: #313244;
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-
-        .palette {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .palette-item {
-            padding: 10px;
-            border: 3px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .palette-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .palette-item.active {
-            border-color: #667eea;
-            background: #f0f4ff;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-        }
-
-        .palette-item span {
-            display: block;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        /* Цвета для элементов палитры */
-        .palette-item[data-type="1"] { background: #269926; color: white; }
-        .palette-item[data-type="0"] { background: #f4a460; color: #333; }
-        .palette-item[data-type="2"] { background: #FF8000; color: white; }
-        .palette-item[data-type="3"] { background: #2ed573; color: white; }
-        .palette-item[data-type="F"] { background: #FFB000; color: #333; }
-        .palette-item[data-type="E"] { background: #FF0000; color: white; }
-        .palette-item[data-type="V"] { background: #FF0000; color: white; }
-
-        #gameCanvas {
-            border: 3px solid #333;
-            border-radius: 10px;
-            cursor: crosshair;
-            background: #f4a460;
-        }
-
-        .controls {
-            margin-top: 20px;
+        .tools { width: 220px; }
+        .tools h2 { font-size: 18px; margin-bottom: 15px; color: #89b4fa; }
+        .tool-btn {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: #45475a;
+            color: #cdd6f4;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.15s;
         }
-
-        button {
-            padding: 12px 20px;
+        .tool-btn:hover { background: #585b70; }
+        .tool-btn.active { border-color: #89b4fa; background: #45475a; }
+        .tool-icon {
+            width: 24px; height: 24px;
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 12px;
+        }
+        .icon-wall { background: #269926; color: white; }
+        .icon-start { background: #00bfff; color: white; }
+        .icon-exit { background: #2ed573; color: white; }
+        .icon-fish { background: #FFB000; color: white; }
+        .icon-enemy-e { background: #FF0000; color: white; }
+        .icon-enemy-v { background: #FF4444; color: white; }
+        .icon-eraser { background: #f4a261; color: white; }
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            background: #89b4fa;
+            color: #1e1e2e;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
+            font-size: 14px;
+            transition: background 0.15s;
         }
+        .action-btn:hover { background: #74c7ec; }
+        .action-btn.danger { background: #f38ba8; }
+        .action-btn.danger:hover { background: #eba0ac; }
+        .action-btn.success { background: #a6e3a1; }
+        .action-btn.success:hover { background: #94d98f; }
 
-        .btn-primary {
-            background: #667eea;
-            color: white;
+        .canvas-wrap { display: flex; flex-direction: column; align-items: center; }
+        .canvas-wrap h2 { color: #89b4fa; margin-bottom: 15px; }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(20, 30px);
+            grid-template-rows: repeat(15, 30px);
+            gap: 1px;
+            background: #1e1e2e;
+            border: 2px solid #585b70;
+            border-radius: 4px;
+            cursor: crosshair;
+            user-select: none;
         }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .cell {
+            width: 30px; height: 30px;
+            background: #f4a261;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: bold;
+            transition: background 0.05s;
         }
+        .cell.wall { background: #269926; }
+        .cell.start { background: #00bfff; }
+        .cell.exit { background: #2ed573; }
+        .cell.fish { background: #f4a261; }
+        .cell.enemy-e { background: #f4a261; }
+        .cell.enemy-v { background: #f4a261; }
 
-        .btn-secondary {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #38a169;
-        }
-
-        .btn-danger {
-            background: #f56565;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #e53e3e;
-        }
-
-        .output-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 600px;
-        }
-
+        .output { width: 320px; }
+        .output h2 { font-size: 18px; margin-bottom: 15px; color: #89b4fa; }
         textarea {
             width: 100%;
-            height: 300px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            padding: 10px;
-            border: 2px solid #ddd;
+            height: 200px;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            border: 1px solid #585b70;
             border-radius: 8px;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
             resize: vertical;
         }
-
-        .info {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            min-height: 36px;
         }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            background: #f0f4ff;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 12px;
-        }
-
-        .stat-value {
-            color: #667eea;
-            font-size: 18px;
-        }
-
-        .instructions {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: #856404;
-        }
-
-        .instructions h3 {
-            margin-bottom: 10px;
-        }
-
-        .instructions ul {
-            margin-left: 20px;
-        }
-
-        .instructions li {
-            margin: 5px 0;
+        .status.ok { background: #a6e3a1; color: #1e1e2e; }
+        .status.err { background: #f38ba8; color: #1e1e2e; }
+        .status.info { background: #89b4fa; color: #1e1e2e; }
+        .hint { font-size: 12px; color: #a6adc8; margin-top: 10px; line-height: 1.5; }
+        
+        /* Мини-превью для тестирования */
+        #preview {
+            margin-top: 15px;
+            border: 2px solid #585b70;
+            border-radius: 4px;
+            background: #f4a261;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>🎮 Редактор уровней для игры "Лабиринт"</h1>
 
-    <div class="instructions">
-        <h3>📖 Как использовать:</h3>
-        <ul>
-            <li><strong>Левая панель:</strong> выберите тип блока (стена, рыбка, враг и т.д.)</li>
-            <li><strong>Сетка:</strong> рисуйте уровень кликами мыши (удерживайте для быстрого рисования)</li>
-            <li><strong>Правая панель:</strong> скопируйте готовый код для вставки в game.js</li>
-        </ul>
+    <!-- ПАНЕЛЬ ИНСТРУМЕНТОВ -->
+    <div class="panel tools">
+        <h2>🛠️ Инструменты</h2>
+        <button class="tool-btn active" data-tool="wall">
+            <span class="tool-icon icon-wall">1</span> Стена
+        </button>
+        <button class="tool-btn" data-tool="start">
+            <span class="tool-icon icon-start">2</span> Старт
+        </button>
+        <button class="tool-btn" data-tool="exit">
+            <span class="tool-icon icon-exit">3</span> Выход
+        </button>
+        <button class="tool-btn" data-tool="fish">
+            <span class="tool-icon icon-fish">F</span> Рыбка
+        </button>
+        <button class="tool-btn" data-tool="enemy-e">
+            <span class="tool-icon icon-enemy-e">E</span> Враг →
+        </button>
+        <button class="tool-btn" data-tool="enemy-v">
+            <span class="tool-icon icon-enemy-v">V</span> Враг ↕
+        </button>
+        <button class="tool-btn" data-tool="eraser">
+            <span class="tool-icon icon-eraser">.</span> Ластик
+        </button>
+
+        <h2 style="margin-top:20px;">⚡ Действия</h2>
+        <button class="action-btn danger" id="btnClear">🗑️ Очистить всё</button>
+        <button class="action-btn" id="btnFillWalls">🧱 Заполнить стенами</button>
+        <button class="action-btn success" id="btnValidate">✅ Проверить уровень</button>
     </div>
 
-    <div class="container">
-        <div class="editor-panel">
-            <h2 style="margin-bottom: 15px;">🎨 Палитра</h2>
-            <div class="palette">
-                <div class="palette-item active" data-type="1" title="Стена">
-                    <span>🟩</span>Стена (1)
-                </div>
-                <div class="palette-item" data-type="0" title="Пусто">
-                    <span>⬜</span>Пусто (0)
-                </div>
-                <div class="palette-item" data-type="2" title="Игрок">
-                    <span>🐱</span>Игрок (2)
-                </div>
-                <div class="palette-item" data-type="3" title="Выход">
-                    <span>🚪</span>Выход (3)
-                </div>
-                <div class="palette-item" data-type="F" title="Рыбка">
-                    <span>🐟</span>Рыбка (F)
-                </div>
-                <div class="palette-item" data-type="E" title="Враг →">
-                    <span>🔴</span>Враг E (→)
-                </div>
-                <div class="palette-item" data-type="V" title="Враг ↓">
-                    <span>🔴</span>Враг V (↓)
-                </div>
-                <div class="palette-item" data-type="eraser" title="Ластик">
-                    <span>🧹</span>Ластик
-                </div>
-            </div>
-
-            <canvas id="gameCanvas" width="600" height="450"></canvas>
-
-            <div class="controls">
-                <button class="btn-secondary" onclick="clearCanvas()">🗑️ Очистить всё</button>
-                <button class="btn-primary" onclick="generateCode()">📋 Сгенерировать код</button>
-                <button class="btn-danger" onclick="loadExample()"> Загрузить пример</button>
-            </div>
-
-            <div class="stats" style="margin-top: 15px;">
-                <div class="stat-item">
-                    <div class="stat-label">Рыбок:</div>
-                    <div class="stat-value" id="fishCount">0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Врагов:</div>
-                    <div class="stat-value" id="enemyCount">0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Игроков:</div>
-                    <div class="stat-value" id="playerCount">0</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="output-panel">
-            <h2 style="margin-bottom: 15px;"> Код уровня</h2>
-            <p class="info">Скопируйте этот код и вставьте в массив levelStrings в файле game.js:</p>
-            <textarea id="outputCode" placeholder="Нажмите 'Сгенерировать код', чтобы получить строку уровня..."></textarea>
-            <button class="btn-primary" onclick="copyToClipboard()" style="margin-top: 10px; width: 100%;">
-                📋 Копировать в буфер обмена
-            </button>
+    <!-- СЕТКА -->
+    <div class="panel canvas-wrap">
+        <h2>🎮 Сетка 20×15</h2>
+        <div id="grid"></div>
+        <canvas id="preview" width="600" height="450"></canvas>
+        <div class="hint">
+            💡 Зажмите кнопку мыши и водите по сетке, чтобы рисовать.<br>
+            ПКМ по клетке — быстрый ластик.
         </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const blockSize = 30;
-        const rows = 15;
-        const cols = 20;
-        
-        let selectedType = '1';
-        let isDrawing = false;
-        let grid = [];
+    <!-- ЭКСПОРТ / ИМПОРТ -->
+    <div class="panel output">
+        <h2>📤 Экспорт / Импорт</h2>
+        <textarea id="codeArea" placeholder="Вставьте сюда строку уровня из game.js..."></textarea>
+        <button class="action-btn success" id="btnImport">⬇️ Импортировать из текста</button>
+        <button class="action-btn" id="btnExport">⬆️ Экспортировать в код</button>
+        <button class="action-btn" id="btnCopy">📋 Скопировать код</button>
+        <div class="status info" id="status">Готов к работе</div>
+        <div class="hint">
+            📝 Скопированный код можно вставить в массив <code>levelStrings</code> в файле <code>game.js</code>.
+        </div>
+    </div>
 
-        // Инициализация сетки
-        function initGrid() {
-            grid = [];
-            for (let r = 0; r < rows; r++) {
-                let row = [];
-                for (let c = 0; c < cols; c++) {
-                    row.push('1'); // По умолчанию стены
-                }
-                grid.push(row);
+<script>
+const COLS = 20, ROWS = 15;
+const grid = document.getElementById('grid');
+const cells = [];
+let currentTool = 'wall';
+let isDrawing = false;
+
+// Символы для каждого инструмента
+const toolToChar = {
+    'wall': '1', 'start': '2', 'exit': '3',
+    'fish': 'F', 'enemy-e': 'E', 'enemy-v': 'V', 'eraser': '.'
+};
+
+// Инициализация сетки
+function initGrid() {
+    grid.innerHTML = '';
+    cells.length = 0;
+    for (let r = 0; r < ROWS; r++) {
+        cells[r] = [];
+        for (let c = 0; c < COLS; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+            grid.appendChild(cell);
+            cells[r][c] = cell;
+        }
+    }
+    // По умолчанию заполняем стенами по краям
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (r === 0 || r === ROWS-1 || c === 0 || c === COLS-1) {
+                setCell(r, c, 'wall');
+            } else {
+                setCell(r, c, 'eraser');
             }
         }
+    }
+}
 
-        // Отрисовка сетки
-        function drawGrid() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    const x = c * blockSize;
-                    const y = r * blockSize;
-                    const cell = grid[r][c];
-                    
-                    // Рисуем ячейку
-                    switch(cell) {
-                        case '1': // Стена
-                            ctx.fillStyle = '#269926';
-                            ctx.fillRect(x + 2, y + 2, blockSize - 4, blockSize - 4);
-                            ctx.strokeStyle = '#000';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(x + 2, y + 2, blockSize - 4, blockSize - 4);
-                            break;
-                        case '0': // Пусто
-                            ctx.fillStyle = '#f4a460';
-                            ctx.fillRect(x, y, blockSize, blockSize);
-                            break;
-                        case '2': // Игрок
-                            ctx.fillStyle = '#FF8000';
-                            ctx.fillRect(x + 4, y + 4, blockSize - 8, blockSize - 8);
-                            ctx.strokeStyle = '#000';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(x + 4, y + 4, blockSize - 8, blockSize - 8);
-                            ctx.fillStyle = '#000';
-                            ctx.font = '16px Arial';
-                            ctx.fillText('🐱', x + 6, y + 20);
-                            break;
-                        case '3': // Выход
-                            ctx.fillStyle = '#2ed573';
-                            ctx.fillRect(x, y, blockSize, blockSize);
-                            ctx.fillStyle = '#333';
-                            ctx.font = '20px Arial';
-                            ctx.fillText('🚪', x + 5, y + 22);
-                            break;
-                        case 'F': // Рыбка
-                            ctx.fillStyle = '#FFB000';
-                            ctx.beginPath();
-                            ctx.ellipse(x + blockSize/2, y + blockSize/2, 8, 6, 0, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.strokeStyle = '#000';
-                            ctx.lineWidth = 2;
-                            ctx.stroke();
-                            break;
-                        case 'E': // Враг горизонтальный
-                            ctx.fillStyle = '#FF0000';
-                            ctx.fillRect(x + 5, y + 5, blockSize - 10, blockSize - 10);
-                            ctx.strokeStyle = '#000';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(x + 5, y + 5, blockSize - 10, blockSize - 10);
-                            ctx.fillStyle = '#fff';
-                            ctx.font = '12px Arial';
-                            ctx.fillText('→', x + 8, y + 18);
-                            break;
-                        case 'V': // Враг вертикальный
-                            ctx.fillStyle = '#FF0000';
-                            ctx.fillRect(x + 5, y + 5, blockSize - 10, blockSize - 10);
-                            ctx.strokeStyle = '#000';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(x + 5, y + 5, blockSize - 10, blockSize - 10);
-                            ctx.fillStyle = '#fff';
-                            ctx.font = '12px Arial';
-                            ctx.fillText('↓', x + 8, y + 18);
-                            break;
-                    }
-                    
-                    // Сетка
-                    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(x, y, blockSize, blockSize);
-                }
-            }
-            
-            updateStats();
+function setCell(r, c, tool) {
+    const cell = cells[r][c];
+    cell.className = 'cell ' + (tool === 'eraser' ? '' : tool);
+    cell.dataset.tool = tool;
+    cell.textContent = tool === 'eraser' ? '' : toolToChar[tool];
+}
+
+function getCellTool(r, c) {
+    return cells[r][c].dataset.tool || 'eraser';
+}
+
+// Обработка рисования
+function paint(r, c) {
+    setCell(r, c, currentTool);
+}
+
+grid.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDrawing = true;
+    const r = +e.target.dataset.r, c = +e.target.dataset.c;
+    if (isNaN(r)) return;
+    if (e.button === 2) {
+        // ПКМ — ластик
+        const oldTool = currentTool;
+        currentTool = 'eraser';
+        paint(r, c);
+        currentTool = oldTool;
+    } else {
+        paint(r, c);
+    }
+});
+grid.addEventListener('mouseover', (e) => {
+    if (!isDrawing) return;
+    const r = +e.target.dataset.r, c = +e.target.dataset.c;
+    if (isNaN(r)) return;
+    paint(r, c);
+});
+document.addEventListener('mouseup', () => isDrawing = false);
+grid.addEventListener('contextmenu', e => e.preventDefault());
+
+// Выбор инструмента
+document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTool = btn.dataset.tool;
+    });
+});
+
+// Очистить всё
+document.getElementById('btnClear').addEventListener('click', () => {
+    for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++)
+            setCell(r, c, 'eraser');
+    setStatus('Поле очищено', 'info');
+});
+
+// Заполнить стенами
+document.getElementById('btnFillWalls').addEventListener('click', () => {
+    for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++)
+            setCell(r, c, 'wall');
+    setStatus('Поле заполнено стенами', 'info');
+});
+
+// Проверка уровня
+document.getElementById('btnValidate').addEventListener('click', () => {
+    let starts = 0, exits = 0, fishes = 0, enemies = 0;
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const t = getCellTool(r, c);
+            if (t === 'start') starts++;
+            if (t === 'exit') exits++;
+            if (t === 'fish') fishes++;
+            if (t === 'enemy-e' || t === 'enemy-v') enemies++;
         }
+    }
+    const errors = [];
+    if (starts === 0) errors.push('❌ Нет стартовой позиции (2)');
+    if (starts > 1) errors.push('⚠️ Несколько стартовых позиций');
+    if (exits === 0) errors.push('❌ Нет выхода (3)');
+    if (fishes === 0) errors.push('⚠️ Нет рыбок — уровень непроходим');
+    if (enemies === 0) setStatus(`✅ Уровень валиден! Старт:1, Выход:1, Рыбок:${fishes}, Врагов:0`, 'ok');
+    else setStatus(`✅ Уровень валиден! Старт:1, Выход:1, Рыбок:${fishes}, Врагов:${enemies}`, 'ok');
+    if (errors.length) setStatus(errors.join('<br>'), 'err');
+});
 
-        // Обновление статистики
-        function updateStats() {
-            let fish = 0, enemies = 0, players = 0;
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (grid[r][c] === 'F') fish++;
-                    if (grid[r][c] === 'E' || grid[r][c] === 'V') enemies++;
-                    if (grid[r][c] === '2') players++;
-                }
-            }
-            document.getElementById('fishCount').textContent = fish;
-            document.getElementById('enemyCount').textContent = enemies;
-            document.getElementById('playerCount').textContent = players;
+// Экспорт в код
+document.getElementById('btnExport').addEventListener('click', () => {
+    let lines = [];
+    for (let r = 0; r < ROWS; r++) {
+        let line = '';
+        for (let c = 0; c < COLS; c++) {
+            const t = getCellTool(r, c);
+            line += toolToChar[t];
         }
+        lines.push('"' + line + '"');
+    }
+    const result = lines.join(' +\n    ');
+    document.getElementById('codeArea').value = result;
+    setStatus('✅ Код экспортирован! Нажмите "Скопировать"', 'ok');
+});
 
-        // Обработка кликов
-        function handleInput(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const c = Math.floor(x / blockSize);
-            const r = Math.floor(y / blockSize);
-            
-            if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                if (selectedType === 'eraser') {
-                    grid[r][c] = '0';
-                } else {
-                    grid[r][c] = selectedType;
-                }
-                drawGrid();
-            }
+// Импорт из кода
+document.getElementById('btnImport').addEventListener('click', () => {
+    const text = document.getElementById('codeArea').value.trim();
+    // Извлекаем все строки в кавычках
+    const matches = text.match(/"([^"]{20})"/g);
+    if (!matches || matches.length !== ROWS) {
+        setStatus(`❌ Нужно ровно ${ROWS} строк по ${COLS} символов. Найдено: ${matches ? matches.length : 0}`, 'err');
+        return;
+    }
+    const charToTool = {
+        '1': 'wall', '2': 'start', '3': 'exit',
+        'F': 'fish', 'E': 'enemy-e', 'V': 'enemy-v', '.': 'eraser'
+    };
+    for (let r = 0; r < ROWS; r++) {
+        const line = matches[r].slice(1, -1);
+        for (let c = 0; c < COLS; c++) {
+            const ch = line[c];
+            setCell(r, c, charToTool[ch] || 'eraser');
         }
+    }
+    setStatus('✅ Уровень импортирован!', 'ok');
+});
 
-        // События мыши
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            handleInput(e);
-        });
+// Копировать в буфер
+document.getElementById('btnCopy').addEventListener('click', async () => {
+    const text = document.getElementById('codeArea').value;
+    if (!text) { setStatus('❌ Сначала нажмите "Экспортировать"', 'err'); return; }
+    try {
+        await navigator.clipboard.writeText(text);
+        setStatus('📋 Код скопирован в буфер обмена!', 'ok');
+    } catch {
+        setStatus('❌ Не удалось скопировать. Выделите текст вручную.', 'err');
+    }
+});
 
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDrawing) {
-                handleInput(e);
-            }
-        });
+function setStatus(msg, type) {
+    const s = document.getElementById('status');
+    s.innerHTML = msg;
+    s.className = 'status ' + type;
+}
 
-        canvas.addEventListener('mouseup', () => {
-            isDrawing = false;
-        });
-
-        canvas.addEventListener('mouseleave', () => {
-            isDrawing = false;
-        });
-
-        // Выбор элемента палитры
-        document.querySelectorAll('.palette-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.palette-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                selectedType = item.dataset.type;
-            });
-        });
-
-        // Очистка
-        function clearCanvas() {
-            if (confirm('Очистить весь уровень?')) {
-                initGrid();
-                drawGrid();
-            }
-        }
-
-        // Генерация кода
-        function generateCode() {
-            let code = '// Новый уровень\n';
-            for (let r = 0; r < rows; r++) {
-                let rowStr = '';
-                for (let c = 0; c < cols; c++) {
-                    rowStr += grid[r][c];
-                }
-                if (r === 0) {
-                    code += `"${rowStr}"`;
-                } else {
-                    code += ` +\n"${rowStr}"`;
-                }
-            }
-            code += ',';
-            document.getElementById('outputCode').value = code;
-        }
-
-        // Копирование в буфер
-        function copyToClipboard() {
-            const textarea = document.getElementById('outputCode');
-            textarea.select();
-            document.execCommand('copy');
-            alert('Код скопирован в буфер обмена!');
-        }
-
-        // Загрузка примера
-        function loadExample() {
-            const example = [
-                "11111111111111111111",
-                "12..1.......1.....F1",
-                "1.1.1.11111.1.111..1",
-                "1.1.1.1...1.1.1....1",
-                "1.1...1.F.1.1.1.V..1",
-                "1.1111111.1.11111..1",
-                "1.1...E...1........1",
-                "1.1.11111.1.11111..1",
-                "1.1.1.....1.1......1",
-                "1.1.1.11111.1.111..1",
-                "1.1.1.1.....1.1....1",
-                "1.1.1.1.111.1.1.1..1",
-                "1.F.1.1.1..1.1.1.1.1",
-                "1...1...1..1...1..31",
-                "11111111111111111111"
-            ];
-            
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    grid[r][c] = example[r][c];
-                }
-            }
-            drawGrid();
-            alert('Пример уровня загружен!');
-        }
-
-        // Инициализация
-        initGrid();
-        drawGrid();
-    </script>
+initGrid();
+</script>
 </body>
 </html>
