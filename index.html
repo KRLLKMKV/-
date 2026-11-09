@@ -93,7 +93,7 @@
             font-weight: bold;
         }
         
-        /* === РЕДАКТОР (ИСПРАВЛЕННАЯ ВЁРСТКА) === */
+        /* === РЕДАКТОР === */
         .editor-tools {
             background: rgba(0,0,0,0.8);
             padding: 20px;
@@ -172,8 +172,8 @@
         
         #grid {
             display: grid;
-            grid-template-columns: repeat(20, 30px);
-            grid-template-rows: repeat(15, 30px);
+            grid-template-columns: repeat(32, 40px);
+            grid-template-rows: repeat(18, 40px);
             gap: 1px;
             background: #1e1e2e;
             border: 2px solid #585b70;
@@ -182,10 +182,10 @@
             user-select: none;
         }
         .cell {
-            width: 30px; height: 30px;
+            width: 40px; height: 40px;
             background: #f4a261;
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: bold;
+            font-size: 16px; font-weight: bold;
             transition: background 0.05s;
         }
         .cell.wall { background: #269926; }
@@ -261,7 +261,7 @@
                 <div>Уровень: <span id="levelDisplay">1</span></div>
                 <div class="fish-count">Осталось рыбок: <span id="fishDisplay">0</span></div>
             </div>
-            <canvas id="gameCanvas" width="600" height="450"></canvas>
+            <canvas id="gameCanvas" width="1280" height="720"></canvas>
             <div style="display:flex; gap:10px;">
                 <button class="action-btn" id="btnPrevLevel">← Предыдущий</button>
                 <button class="action-btn" id="btnNextLevel">Следующий →</button>
@@ -317,7 +317,7 @@
         </div>
 
         <div class="editor-canvas-wrap">
-            <h2>🎮 Сетка 20×15</h2>
+            <h2>🎮 Сетка 32×18</h2>
             <div id="grid"></div>
             <div class="editor-status info" id="editorStatus">Готов к работе</div>
             <p class="editor-hint">💡 Зажмите мышь и водите по сетке. ПКМ — ластик.</p>
@@ -328,24 +328,22 @@
 // === КЛАССЫ ИГРЫ ===
 class Player {
     constructor() {
-        this.size = 32; // Размер 32x32 для чёткого пиксель-арта (сетка 16x16, пиксель = 2px)
+        this.size = 36;
         this.speed = 3;
         this.x = 0;
         this.y = 0;
-        this.walkCycle = 0; // Счётчик кадров анимации
-        this.facing = 1;    // 1 = смотрит вправо, -1 = смотрит влево
+        this.walkCycle = 0;
+        this.facing = 1;
     }
 
     move(keys) {
         let nextX = this.x, nextY = this.y;
         let isMoving = false;
 
-        // Движение по вертикали
         if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) { nextY -= this.speed; isMoving = true; }
         if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) { nextY += this.speed; isMoving = true; }
         if (!checkCollision(this.x, nextY, this.size)) this.y = nextY;
 
-        // Движение по горизонтали + запоминание направления
         if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) {
             nextX -= this.speed; isMoving = true; this.facing = -1;
         }
@@ -354,38 +352,29 @@ class Player {
         }
         if (!checkCollision(nextX, this.y, this.size)) this.x = nextX;
 
-        // Обновляем анимацию только если движемся
         if (isMoving) {
-            this.walkCycle += 0.2; // Скорость переключения кадров
+            this.walkCycle += 0.2;
         } else {
-            this.walkCycle = 0; // Сброс в спокойное состояние
+            this.walkCycle = 0;
         }
     }
 
     draw(ctx, catImage) {
-        // Если картинка cat1.png загрузилась, рисуем её (приоритет)
         if (catImage.complete && catImage.naturalWidth !== 0) {
             ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
             return;
         }
 
-        ctx.save(); // Сохраняем состояние холста
-        
-        // Перемещаем точку отсчёта в центр игрока
+        ctx.save();
         let cx = this.x + this.size / 2;
         let cy = this.y + this.size / 2;
         ctx.translate(cx, cy);
-
-        // Отражаем по горизонтали, если котик смотрит влево
         ctx.scale(this.facing, 1);
 
-        const p = this.size / 16; // Размер одного "пикселя" (2px)
-        
-        // Лёгкое подпрыгивание при ходьбе
+        const p = this.size / 16;
         let bob = (this.walkCycle > 0) ? Math.sin(this.walkCycle * 2) * 2 : 0;
         ctx.translate(0, bob);
 
-        // Кадр 1 (стойка / левая нога впереди)
         const frame1 = [
             "....OO..OO......",
             "...OOOOOOOOO....",
@@ -405,7 +394,6 @@ class Player {
             "................"
         ];
 
-        // Кадр 2 (шаг / правая нога впереди, хвост дёрнулся)
         const frame2 = [
             "....OO..OO......",
             "...OOOOOOOOO....",
@@ -425,23 +413,19 @@ class Player {
             "................"
         ];
 
-        // Переключаем кадры на основе счётчика шагов
         let frame = (this.walkCycle > 0 && Math.floor(this.walkCycle * 2) % 2 === 1) ? frame2 : frame1;
 
-        // Палитра пиксель-арта
         const colors = {
-            'O': '#FFAA33', // Яркий оранжевый (тело)
-            'T': '#E68A00', // Тёмно-оранжевый (хвост)
-            'B': '#222222', // Почти чёрный (лапки)
-            'W': '#FFFFFF', // Белый (глаза)
-            'P': '#FF8888'  // Розовый (носик)
+            'O': '#FFAA33',
+            'T': '#E68A00',
+            'B': '#222222',
+            'W': '#FFFFFF',
+            'P': '#FF8888'
         };
 
-        // Смещаем начало отрисовки, чтобы сетка 16x16 была центрирована относительно (0,0)
         let startX = -8 * p;
         let startY = -8 * p;
 
-        // Рисуем пиксель за пикселем
         for (let r = 0; r < 16; r++) {
             for (let c = 0; c < 16; c++) {
                 let char = frame[r][c];
@@ -452,13 +436,13 @@ class Player {
             }
         }
 
-        ctx.restore(); // Восстанавливаем состояние холста
+        ctx.restore();
     }
 }
 
 class HorizontalRedCube {
     constructor(c, i) {
-        this.size = 20;
+        this.size = 30;
         this.x = c * blockSize + 5;
         this.y = i * blockSize + 5;
         this.dx = Math.random() > 0.5 ? 1.5 : -1.5;
@@ -478,7 +462,7 @@ class HorizontalRedCube {
 
 class VerticalRedCube {
     constructor(c, i) {
-        this.size = 20;
+        this.size = 30;
         this.x = c * blockSize + 5;
         this.y = i * blockSize + 5;
         this.dx = 0;
@@ -496,12 +480,87 @@ class VerticalRedCube {
     }
 }
 
-// === ГОТОВЫЕ УРОВНИ ===
+// === ГОТОВЫЕ УРОВНИ (32×18) ===
 const defaultLevels = [
-    "11111111111111111111" + "12..1.......1.....F1" + "1.1.1.11111.1.111..1" + "1.1.1.1...1.1.1....1" + "1.1...1.F.1.1.1.V..1" + "1.1111111.1.11111..1" + "1.1...E...1........1" + "1.1.11111.1.11111..1" + "1.1.1.....1.1......1" + "1.1.1.11111.1.111..1" + "1.1.1.1.....1.1....1" + "1.1.1.1.111.1.1.1..1" + "1.F.1.1.1..1.1.1.1.1" + "1...1...1..1...1..31" + "11111111111111111111",
-    "11111111111111111111" + "12..1...F...1......1" + "1.1.1.111.1.1.111..1" + "1.1.V.1...1.1.V.1..1" + "1.111.1.111.1.1.11.1" + "1F..1.1.1...1.1.1..1" + "111.1.1.11111.1.1..1" + "1...1.1...E...1.1..1" + "1.111.1.11111.1.11.1" + "1.1...1.1...1.1....1" + "1.1.111.1.1.1.1111.1" + "1.1.1...1.1.1.1.E..1" + "1.F.1.111.1.111.11.1" + "1...1.......1...F.31" + "11111111111111111111",
-    "11111111111111111111" + "12.1............1.F1" + "1.1.11111.11111..1.1" + "1.1.1...1.1...1..1.1" + "1.1.1.V.1.1.V.1..1.1" + "1.1.1...1.1...1..1.1" + "1.1.11111.11111..1.1" + "1.1...E........E...1" + "1.1.11111.11111..1.1" + "1.1.1...1.1...1..1.1" + "1.1.1.V.1.1.V.1..1.1" + "1.1.1...1.1...1..1.1" + "1.1.11111.11111..1.1" + "1F.1............1.31" + "11111111111111111111",
-    "11111111111111111111" + "12................F1" + "1.1111.11111.1111..1" + "1.1...1.1...1.1....1" + "1.1.V.1.1.V.1.1.V..1" + "1.1...1.1...1.1....1" + "1.1111.11111.1111..1" + "1...E...........E..1" + "11111.11111.11111..1" + "1.1...1.1...1.1....1" + "1.1.V.1.1.V.1.1.V..1" + "1.1...1.1...1.1....1" + "1.1111.11111.1111..1" + "1F................31" + "11111111111111111111"
+    // Уровень 1 - "Первые шаги"
+    "11111111111111111111111111111111" +
+    "12..............................1" +
+    "1.11111111.11111111.11111111.11.1" +
+    "1.1......1.1......1.1......1....1" +
+    "1.1.F....1.1.F....1.1.F....1.F..1" +
+    "1.1......1.1......1.1......1....1" +
+    "1.11111111.11111111.11111111.11.1" +
+    "1...............................1" +
+    "1.11111111.11111111.11111111.11.1" +
+    "1.1......1.1......1.1......1....1" +
+    "1.1.V....1.1.V....1.1.V....1.V..1" +
+    "1.1......1.1......1.1......1....1" +
+    "1.11111111.11111111.11111111.11.1" +
+    "1...............................1" +
+    "1.11111111.11111111.11111111.11.1" +
+    "1.1......1.1......1.1......1....1" +
+    "1.F......1.E......1.E......1..31" +
+    "11111111111111111111111111111111",
+    
+    // Уровень 2 - "Лабиринт"
+    "11111111111111111111111111111111" +
+    "12..1...1...1...1...1...1...1..1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.F.1.F.1.F.1.F.1.F.1.F.1.F.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1...1...1...1...1...1...1...1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.V.1.V.1.V.1.V.1.V.1.V.1.V.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1...1...1...1...1...1...1...1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
+    "1.F.1.E.1.E.1.E.1.E.1.E.1.E.1.31" +
+    "11111111111111111111111111111111",
+    
+    // Уровень 3 - "Змеиное гнездо"
+    "11111111111111111111111111111111" +
+    "12..............................1" +
+    "1.111111.111111.111111.111111.1" +
+    "1.1....1.1....1.1....1.1....1.1" +
+    "1.1.V..1.1.V..1.1.V..1.1.V..1.1" +
+    "1.1....1.1....1.1....1.1....1.1" +
+    "1.111111.111111.111111.111111.1" +
+    "1...............................1" +
+    "1.111111.111111.111111.111111.1" +
+    "1.1....1.1....1.1....1.1....1.1" +
+    "1.1.V..1.1.V..1.1.V..1.1.V..1.1" +
+    "1.1....1.1....1.1....1.1....1.1" +
+    "1.111111.111111.111111.111111.1" +
+    "1...............................1" +
+    "1.111111.111111.111111.111111.1" +
+    "1.1....1.1....1.1....1.1....1.1" +
+    "1.F....1.E....1.E....1.E....1.31" +
+    "11111111111111111111111111111111",
+    
+    // Уровень 4 - "Арена Хаоса"
+    "11111111111111111111111111111111" +
+    "12..............................1" +
+    "1.1111.11111.11111.11111.11111.1" +
+    "1.1...1.1...1.1...1.1...1.1...1" +
+    "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" +
+    "1.1...1.1...1.1...1.1...1.1...1" +
+    "1.1111.11111.11111.11111.11111.1" +
+    "1...............................1" +
+    "1.1111.11111.11111.11111.11111.1" +
+    "1.1...1.1...1.1...1.1...1.1...1" +
+    "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" +
+    "1.1...1.1...1.1...1.1...1.1...1" +
+    "1.1111.11111.11111.11111.11111.1" +
+    "1...............................1" +
+    "1.1111.11111.11111.11111.11111.1" +
+    "1.1...1.1...1.1...1.1...1.1...1" +
+    "1.F...1.E...1.E...1.E...1.E..31" +
+    "11111111111111111111111111111111"
 ];
 
 let customLevels = JSON.parse(localStorage.getItem('customLevels') || '[]');
@@ -513,7 +572,7 @@ const ctx = canvas.getContext('2d');
 const levelDisplay = document.getElementById('levelDisplay');
 const fishDisplay = document.getElementById('fishDisplay');
 const winScreen = document.getElementById('winScreen');
-const blockSize = 30;
+const blockSize = 40;
 const catImage = new Image();
 catImage.src = 'cat1.png';
 
@@ -529,8 +588,8 @@ function parseMap(levelStr) {
     let map = [];
     fishList = [];
     entities = [];
-    for (let i = 0; i < 15; i++) {
-        let rowStr = levelStr.substring(i * 20, (i + 1) * 20);
+    for (let i = 0; i < 18; i++) {
+        let rowStr = levelStr.substring(i * 32, (i + 1) * 32);
         let rowArr = [];
         for (let c = 0; c < rowStr.length; c++) {
             let char = rowStr[c];
@@ -539,7 +598,7 @@ function parseMap(levelStr) {
             else if (char === '3') rowArr.push(3);
             else if (char === 'F') {
                 rowArr.push(0);
-                fishList.push({ x: c * blockSize + 15, y: i * blockSize + 15, radius: 6 });
+                fishList.push({ x: c * blockSize + 20, y: i * blockSize + 20, radius: 8 });
             } else if (char === 'E') {
                 rowArr.push(0);
                 entities.push(new HorizontalRedCube(c, i));
@@ -629,15 +688,15 @@ function draw() {
                 ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
                 if (fishList.length > 0) {
                     ctx.fillStyle = '#333';
-                    ctx.font = '12px Arial';
-                    ctx.fillText('🔒', c * blockSize + 7, r * blockSize + 20);
+                    ctx.font = '16px Arial';
+                    ctx.fillText('🔒', c * blockSize + 10, r * blockSize + 28);
                 }
             }
         }
     }
     for (let fish of fishList) {
         ctx.beginPath();
-        ctx.ellipse(fish.x, fish.y, fish.radius + 3, fish.radius, 0, 0, Math.PI * 2);
+        ctx.ellipse(fish.x, fish.y, fish.radius + 4, fish.radius, 0, 0, Math.PI * 2);
         ctx.fillStyle = '#FFB000';
         ctx.fill();
         ctx.closePath();
@@ -718,7 +777,7 @@ window.deleteCustomLevel = function(idx) {
 };
 
 // === РЕДАКТОР ===
-const COLS = 20, ROWS = 15;
+const COLS = 32, ROWS = 18;
 const grid = document.getElementById('grid');
 const cells = [];
 let currentTool = 'wall';
