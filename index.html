@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Pixel&display=swap" rel="stylesheet">
+    <!-- Подключение шрифта Public Pixel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Pixel&display=swap" rel="stylesheet">
     <title>Игра "Лабиринт" + Редактор</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,11 +24,9 @@
             background-attachment: fixed;
             display: flex;
             flex-direction: column;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
             color: white;
         }
         
-        /* Навигация - компактная */
         .nav {
             background: rgba(0,0,0,0.85);
             padding: 8px 20px;
@@ -40,7 +39,6 @@
         .nav button {
             padding: 8px 20px;
             border: none;
-            border-radius: 8px;
             background: #45475a;
             color: white;
             font-size: 14px;
@@ -51,17 +49,13 @@
         .nav button:hover { background: #585b70; }
         .nav button.active { background: #89b4fa; color: #1e1e2e; }
         
-        /* Основной контейнер - занимает всё оставшееся место */
         .mode { 
             display: none; 
             flex: 1;
             overflow: hidden;
         }
-        .mode.active { 
-            display: flex;
-        }
+        .mode.active { display: flex; }
         
-        /* === ИГРОВОЙ РЕЖИМ === */
         #gameMode.active {
             flex-direction: row;
             gap: 15px;
@@ -81,7 +75,6 @@
         .ui-panel {
             background: rgba(0,0,0,0.75);
             padding: 8px 20px;
-            border-radius: 10px;
             font-size: 16px;
             font-weight: bold;
             backdrop-filter: blur(5px);
@@ -94,7 +87,6 @@
         canvas {
             background: rgba(244,164,96,0.95);
             border: 2px solid #000;
-            border-radius: 8px;
             max-width: 100%;
             max-height: calc(100vh - 120px);
             object-fit: contain;
@@ -108,7 +100,6 @@
         .game-controls button {
             padding: 6px 16px;
             border: none;
-            border-radius: 6px;
             background: #89b4fa;
             color: #1e1e2e;
             font-weight: bold;
@@ -123,7 +114,6 @@
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.9);
             padding: 30px 50px;
-            border-radius: 15px;
             text-align: center;
             display: none;
             z-index: 100;
@@ -134,33 +124,25 @@
             padding: 10px 25px;
             font-size: 16px;
             border: none;
-            border-radius: 8px;
             background: #89b4fa;
             color: #1e1e2e;
             cursor: pointer;
             font-weight: bold;
         }
         
-        /* Список уровней - узкая панель справа */
         .levels-list {
             background: rgba(0,0,0,0.8);
             padding: 12px;
-            border-radius: 10px;
             width: 200px;
             overflow-y: auto;
             flex-shrink: 0;
             backdrop-filter: blur(10px);
         }
-        .levels-list h2 { 
-            color: #89b4fa; 
-            margin-bottom: 10px; 
-            font-size: 16px;
-        }
+        .levels-list h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; }
         .level-item {
             padding: 8px;
             margin-bottom: 6px;
             background: #45475a;
-            border-radius: 6px;
             display: flex;
             flex-direction: column;
             gap: 5px;
@@ -169,7 +151,6 @@
         .level-item button {
             padding: 4px 10px;
             border: none;
-            border-radius: 5px;
             background: #89b4fa;
             color: #1e1e2e;
             cursor: pointer;
@@ -178,7 +159,6 @@
         }
         .level-item button.delete { background: #f38ba8; }
         
-        /* === РЕДАКТОР === */
         #editorMode.active {
             flex-direction: row;
             gap: 10px;
@@ -188,17 +168,12 @@
         .editor-tools {
             background: rgba(0,0,0,0.8);
             padding: 12px;
-            border-radius: 10px;
             width: 180px;
             flex-shrink: 0;
             backdrop-filter: blur(10px);
             overflow-y: auto;
         }
-        .editor-tools h2 { 
-            color: #89b4fa; 
-            margin-bottom: 10px; 
-            font-size: 16px;
-        }
+        .editor-tools h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; }
         .tool-btn {
             display: flex;
             align-items: center;
@@ -207,7 +182,6 @@
             padding: 8px;
             margin-bottom: 5px;
             border: 2px solid transparent;
-            border-radius: 6px;
             background: #45475a;
             color: white;
             cursor: pointer;
@@ -218,7 +192,6 @@
         .tool-btn.active { border-color: #89b4fa; }
         .tool-icon {
             width: 20px; height: 20px;
-            border-radius: 3px;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; font-size: 11px;
             flex-shrink: 0;
@@ -241,7 +214,6 @@
             width: 100%;
             padding: 8px;
             border: none;
-            border-radius: 6px;
             background: #89b4fa;
             color: #1e1e2e;
             font-weight: bold;
@@ -262,12 +234,7 @@
             justify-content: center;
             min-width: 0;
         }
-        .editor-canvas-wrap h2 { 
-            color: #89b4fa; 
-            margin-bottom: 10px; 
-            font-size: 16px;
-            flex-shrink: 0;
-        }
+        .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; flex-shrink: 0; }
         
         #grid {
             display: grid;
@@ -276,7 +243,6 @@
             gap: 1px;
             background: #1e1e2e;
             border: 2px solid #585b70;
-            border-radius: 4px;
             cursor: crosshair;
             user-select: none;
             flex-shrink: 0;
@@ -295,7 +261,6 @@
         .editor-status {
             margin-top: 10px;
             padding: 8px;
-            border-radius: 6px;
             font-size: 12px;
             text-align: center;
             flex-shrink: 0;
@@ -312,6 +277,7 @@
             flex-shrink: 0;
         }
         
+        /* === ГЛОБАЛЬНЫЕ СТИЛИ: ОСТРЫЕ УГЛЫ И ШРИФТ PUBLIC PIXEL === */
         * { 
             border-radius: 0 !important;
             font-family: 'Public Pixel', cursive !important;
@@ -322,26 +288,23 @@
 </head>
 <body>
 
-    <!-- НАВИГАЦИЯ -->
     <div class="nav">
         <button id="btnGameMode" class="active">🎮 Играть</button>
         <button id="btnEditorMode">🛠️ Редактор</button>
     </div>
 
-    <!-- ИГРОВОЙ РЕЖИМ -->
     <div id="gameMode" class="mode active">
         <div class="game-container">
             <div class="ui-panel">
                 <div>Уровень: <span id="levelDisplay">1</span></div>
-                <div class="fish-count">Осталось рыбок: <span id="fishDisplay">0</span></div>
+                <div class="fish-count">Рыбок: <span id="fishDisplay">0</span></div>
             </div>
             <canvas id="gameCanvas" width="1280" height="720"></canvas>
             <div class="game-controls">
-                <button id="btnPrevLevel">← Предыдущий</button>
-                <button id="btnNextLevel">Следующий →</button>
+                <button id="btnPrevLevel">← Назад</button>
+                <button id="btnNextLevel">Вперёд →</button>
             </div>
         </div>
-        
         <div class="levels-list">
             <h2>📋 Уровни</h2>
             <div id="levelsList"></div>
@@ -354,31 +317,16 @@
         <button id="btnContinue">Играть сначала</button>
     </div>
 
-    <!-- РЕДАКТОР -->
     <div id="editorMode" class="mode">
         <div class="editor-tools">
             <h2>🛠️ Инструменты</h2>
-            <button class="tool-btn active" data-tool="wall">
-                <span class="tool-icon icon-wall">1</span> Стена
-            </button>
-            <button class="tool-btn" data-tool="start">
-                <span class="tool-icon icon-start">2</span> Старт
-            </button>
-            <button class="tool-btn" data-tool="exit">
-                <span class="tool-icon icon-exit">3</span> Выход
-            </button>
-            <button class="tool-btn" data-tool="fish">
-                <span class="tool-icon icon-fish">F</span> Рыбка
-            </button>
-            <button class="tool-btn" data-tool="enemy-e">
-                <span class="tool-icon icon-enemy-e">E</span> Враг →
-            </button>
-            <button class="tool-btn" data-tool="enemy-v">
-                <span class="tool-icon icon-enemy-v">V</span> Враг ↕
-            </button>
-            <button class="tool-btn" data-tool="eraser">
-                <span class="tool-icon icon-eraser">.</span> Ластик
-            </button>
+            <button class="tool-btn active" data-tool="wall"><span class="tool-icon icon-wall">1</span> Стена</button>
+            <button class="tool-btn" data-tool="start"><span class="tool-icon icon-start">2</span> Старт</button>
+            <button class="tool-btn" data-tool="exit"><span class="tool-icon icon-exit">3</span> Выход</button>
+            <button class="tool-btn" data-tool="fish"><span class="tool-icon icon-fish">F</span> Рыбка</button>
+            <button class="tool-btn" data-tool="enemy-e"><span class="tool-icon icon-enemy-e">E</span> Враг →</button>
+            <button class="tool-btn" data-tool="enemy-v"><span class="tool-icon icon-enemy-v">V</span> Враг ↕</button>
+            <button class="tool-btn" data-tool="eraser"><span class="tool-icon icon-eraser">.</span> Ластик</button>
 
             <h2 style="margin-top:15px;">⚡ Действия</h2>
             <div class="editor-actions">
@@ -394,12 +342,11 @@
             <h2>🎮 Сетка 32×18</h2>
             <div id="grid"></div>
             <div class="editor-status info" id="editorStatus">Готов к работе</div>
-            <p class="editor-hint">💡 Зажмите мышь и водите по сетке. ПКМ — ластик.</p>
+            <p class="editor-hint">💡 Зажмите мышь и водите. ПКМ — ластик.</p>
         </div>
     </div>
 
 <script>
-// === КЛАССЫ ИГРЫ ===
 class Player {
     constructor() {
         this.size = 36;
@@ -409,97 +356,35 @@ class Player {
         this.walkCycle = 0;
         this.facing = 1;
     }
-
     move(keys) {
         let nextX = this.x, nextY = this.y;
         let isMoving = false;
-
         if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) { nextY -= this.speed; isMoving = true; }
         if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) { nextY += this.speed; isMoving = true; }
         if (!checkCollision(this.x, nextY, this.size)) this.y = nextY;
-
-        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) {
-            nextX -= this.speed; isMoving = true; this.facing = -1;
-        }
-        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) {
-            nextX += this.speed; isMoving = true; this.facing = 1;
-        }
+        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) { nextX -= this.speed; isMoving = true; this.facing = -1; }
+        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) { nextX += this.speed; isMoving = true; this.facing = 1; }
         if (!checkCollision(nextX, this.y, this.size)) this.x = nextX;
-
-        if (isMoving) {
-            this.walkCycle += 0.2;
-        } else {
-            this.walkCycle = 0;
-        }
+        if (isMoving) this.walkCycle += 0.2;
+        else this.walkCycle = 0;
     }
-
     draw(ctx, catImage) {
         if (catImage.complete && catImage.naturalWidth !== 0) {
             ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
             return;
         }
-
         ctx.save();
-        let cx = this.x + this.size / 2;
-        let cy = this.y + this.size / 2;
+        let cx = this.x + this.size / 2, cy = this.y + this.size / 2;
         ctx.translate(cx, cy);
         ctx.scale(this.facing, 1);
-
         const p = this.size / 16;
         let bob = (this.walkCycle > 0) ? Math.sin(this.walkCycle * 2) * 2 : 0;
         ctx.translate(0, bob);
-
-        const frame1 = [
-            "....OO..OO......",
-            "...OOOOOOOOO....",
-            "..OOOOOOOOOOOO..",
-            "..OWWOOOOOOOWWO.",
-            "..OOOOOPPOOOOO..",
-            "...OOOOOOOOOO...",
-            "....OOOOOOOO....",
-            "...OOOOOOOOOO...",
-            "..OOOOOOOOOOOO..",
-            ".TOOOOOOOOOOOOO.",
-            ".TOOOOOOOOOOOOO.",
-            "..OOOOOOOOOOOO..",
-            "...OOOO..OOOO...",
-            "...OOOO..OOOO...",
-            "...BBBB..BBBB...",
-            "................"
-        ];
-
-        const frame2 = [
-            "....OO..OO......",
-            "...OOOOOOOOO....",
-            "..OOOOOOOOOOOO..",
-            "..OWWOOOOOOOWWO.",
-            "..OOOOOPPOOOOO..",
-            "...OOOOOOOOOO...",
-            "....OOOOOOOO....",
-            "...OOOOOOOOOO...",
-            "..OOOOOOOOOOOO..",
-            "..TOOOOOOOOOOOO.",
-            "..TOOOOOOOOOOOO.",
-            "...OOOOOOOOOOO..",
-            "....OOOO..OOOO..",
-            "....OOOO..OOOO..",
-            "....BBBB..BBBB..",
-            "................"
-        ];
-
+        const frame1 = ["....OO..OO......", "...OOOOOOOOO....", "..OOOOOOOOOOOO..", "..OWWOOOOOOOWWO.", "..OOOOOPPOOOOO..", "...OOOOOOOOOO...", "....OOOOOOOO....", "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", ".TOOOOOOOOOOOOO.", ".TOOOOOOOOOOOOO.", "..OOOOOOOOOOOO..", "...OOOO..OOOO...", "...OOOO..OOOO...", "...BBBB..BBBB...", "................"];
+        const frame2 = ["....OO..OO......", "...OOOOOOOOO....", "..OOOOOOOOOOOO..", "..OWWOOOOOOOWWO.", "..OOOOOPPOOOOO..", "...OOOOOOOOOO...", "....OOOOOOOO....", "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", "..TOOOOOOOOOOOO.", "..TOOOOOOOOOOOO.", "...OOOOOOOOOOO..", "....OOOO..OOOO..", "....OOOO..OOOO..", "....BBBB..BBBB..", "................"];
         let frame = (this.walkCycle > 0 && Math.floor(this.walkCycle * 2) % 2 === 1) ? frame2 : frame1;
-
-        const colors = {
-            'O': '#FFAA33',
-            'T': '#E68A00',
-            'B': '#222222',
-            'W': '#FFFFFF',
-            'P': '#FF8888'
-        };
-
-        let startX = -8 * p;
-        let startY = -8 * p;
-
+        const colors = {'O': '#FFAA33', 'T': '#E68A00', 'B': '#222222', 'W': '#FFFFFF', 'P': '#FF8888'};
+        let startX = -8 * p, startY = -8 * p;
         for (let r = 0; r < 16; r++) {
             for (let c = 0; c < 16; c++) {
                 let char = frame[r][c];
@@ -509,7 +394,6 @@ class Player {
                 }
             }
         }
-
         ctx.restore();
     }
 }
@@ -517,120 +401,38 @@ class Player {
 class HorizontalRedCube {
     constructor(c, i) {
         this.size = 30;
-        this.x = c * blockSize + 5;
-        this.y = i * blockSize + 5;
+        this.x = c * 40 + 5;
+        this.y = i * 40 + 5;
         this.dx = Math.random() > 0.5 ? 1.5 : -1.5;
         this.dy = 0;
     }
     move() {
         let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
-        if (checkCollision(nextEx, nextEy, this.size)) {
-            this.dx = -this.dx;
-            this.dy = -this.dy;
-        } else {
-            this.x = nextEx;
-            this.y = nextEy;
-        }
+        if (checkCollision(nextEx, nextEy, this.size)) { this.dx = -this.dx; this.dy = -this.dy; } 
+        else { this.x = nextEx; this.y = nextEy; }
     }
 }
 
 class VerticalRedCube {
     constructor(c, i) {
         this.size = 30;
-        this.x = c * blockSize + 5;
-        this.y = i * blockSize + 5;
+        this.x = c * 40 + 5;
+        this.y = i * 40 + 5;
         this.dx = 0;
         this.dy = Math.random() > 0.5 ? 1.5 : -1.5;
     }
     move() {
         let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
-        if (checkCollision(nextEx, nextEy, this.size)) {
-            this.dx = -this.dx;
-            this.dy = -this.dy;
-        } else {
-            this.x = nextEx;
-            this.y = nextEy;
-        }
+        if (checkCollision(nextEx, nextEy, this.size)) { this.dx = -this.dx; this.dy = -this.dy; } 
+        else { this.x = nextEx; this.y = nextEy; }
     }
 }
 
-// === ГОТОВЫЕ УРОВНИ (32×18) ===
 const defaultLevels = [
-    "11111111111111111111111111111111" +
-    "12..............................1" +
-    "1.11111111.11111111.11111111.11.1" +
-    "1.1......1.1......1.1......1....1" +
-    "1.1.F....1.1.F....1.1.F....1.F..1" +
-    "1.1......1.1......1.1......1....1" +
-    "1.11111111.11111111.11111111.11.1" +
-    "1...............................1" +
-    "1.11111111.11111111.11111111.11.1" +
-    "1.1......1.1......1.1......1....1" +
-    "1.1.V....1.1.V....1.1.V....1.V..1" +
-    "1.1......1.1......1.1......1....1" +
-    "1.11111111.11111111.11111111.11.1" +
-    "1...............................1" +
-    "1.11111111.11111111.11111111.11.1" +
-    "1.1......1.1......1.1......1....1" +
-    "1.F......1.E......1.E......1..31" +
-    "11111111111111111111111111111111",
-    
-    "11111111111111111111111111111111" +
-    "12..1...1...1...1...1...1...1..1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.F.1.F.1.F.1.F.1.F.1.F.1.F.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1...1...1...1...1...1...1...1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.V.1.V.1.V.1.V.1.V.1.V.1.V.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1...1...1...1...1...1...1...1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
-    "1.F.1.E.1.E.1.E.1.E.1.E.1.E.1.31" +
-    "11111111111111111111111111111111",
-    
-    "11111111111111111111111111111111" +
-    "12..............................1" +
-    "1.111111.111111.111111.111111.1" +
-    "1.1....1.1....1.1....1.1....1.1" +
-    "1.1.V..1.1.V..1.1.V..1.1.V..1.1" +
-    "1.1....1.1....1.1....1.1....1.1" +
-    "1.111111.111111.111111.111111.1" +
-    "1...............................1" +
-    "1.111111.111111.111111.111111.1" +
-    "1.1....1.1....1.1....1.1....1.1" +
-    "1.1.V..1.1.V..1.1.V..1.1.V..1.1" +
-    "1.1....1.1....1.1....1.1....1.1" +
-    "1.111111.111111.111111.111111.1" +
-    "1...............................1" +
-    "1.111111.111111.111111.111111.1" +
-    "1.1....1.1....1.1....1.1....1.1" +
-    "1.F....1.E....1.E....1.E....1.31" +
-    "11111111111111111111111111111111",
-    
-    "11111111111111111111111111111111" +
-    "12..............................1" +
-    "1.1111.11111.11111.11111.11111.1" +
-    "1.1...1.1...1.1...1.1...1.1...1" +
-    "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" +
-    "1.1...1.1...1.1...1.1...1.1...1" +
-    "1.1111.11111.11111.11111.11111.1" +
-    "1...............................1" +
-    "1.1111.11111.11111.11111.11111.1" +
-    "1.1...1.1...1.1...1.1...1.1...1" +
-    "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" +
-    "1.1...1.1...1.1...1.1...1.1...1" +
-    "1.1111.11111.11111.11111.11111.1" +
-    "1...............................1" +
-    "1.1111.11111.11111.11111.11111.1" +
-    "1.1...1.1...1.1...1.1...1.1...1" +
-    "1.F...1.E...1.E...1.E...1.E..31" +
-    "11111111111111111111111111111111"
+    "11111111111111111111111111111111" + "12..............................1" + "1.11111111.11111111.11111111.11.1" + "1.1......1.1......1.1......1....1" + "1.1.F....1.1.F....1.1.F....1.F..1" + "1.1......1.1......1.1......1....1" + "1.11111111.11111111.11111111.11.1" + "1...............................1" + "1.11111111.11111111.11111111.11.1" + "1.1......1.1......1.1......1....1" + "1.1.V....1.1.V....1.1.V....1.V..1" + "1.1......1.1......1.1......1....1" + "1.11111111.11111111.11111111.11.1" + "1...............................1" + "1.11111111.11111111.11111111.11.1" + "1.1......1.1......1.1......1....1" + "1.F......1.E......1.E......1..31" + "11111111111111111111111111111111",
+    "11111111111111111111111111111111" + "12..1...1...1...1...1...1...1..1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.F.1.F.1.F.1.F.1.F.1.F.1.F.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1...1...1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.V.1.V.1.V.1.V.1.V.1.V.1.V.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1...1...1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.F.1.E.1.E.1.E.1.E.1.E.1.E.1.31" + "11111111111111111111111111111111",
+    "11111111111111111111111111111111" + "12..............................1" + "1.111111.111111.111111.111111.1" + "1.1....1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.1.V..1.1.V..1.1" + "1.1....1.1....1.1....1.1....1.1" + "1.111111.111111.111111.111111.1" + "1...............................1" + "1.111111.111111.111111.111111.1" + "1.1....1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.1.V..1.1.V..1.1" + "1.1....1.1....1.1....1.1....1.1" + "1.111111.111111.111111.111111.1" + "1...............................1" + "1.111111.111111.111111.111111.1" + "1.1....1.1....1.1....1.1....1.1" + "1.F....1.E....1.E....1.E....1.31" + "11111111111111111111111111111111",
+    "11111111111111111111111111111111" + "12..............................1" + "1.1111.11111.11111.11111.11111.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1111.11111.11111.11111.11111.1" + "1...............................1" + "1.1111.11111.11111.11111.11111.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1111.11111.11111.11111.11111.1" + "1...............................1" + "1.1111.11111.11111.11111.11111.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.F...1.E...1.E...1.E...1.E..31" + "11111111111111111111111111111111"
 ];
 
 let customLevels = JSON.parse(localStorage.getItem('customLevels') || '[]');
@@ -664,16 +466,10 @@ function parseMap(levelStr) {
             if (char === '1') rowArr.push(1);
             else if (char === '2') rowArr.push(2);
             else if (char === '3') rowArr.push(3);
-            else if (char === 'F') {
-                rowArr.push(0);
-                fishList.push({ x: c * blockSize + 20, y: i * blockSize + 20, radius: 8 });
-            } else if (char === 'E') {
-                rowArr.push(0);
-                entities.push(new HorizontalRedCube(c, i));
-            } else if (char === 'V') {
-                rowArr.push(0);
-                entities.push(new VerticalRedCube(c, i));
-            } else rowArr.push(0);
+            else if (char === 'F') { rowArr.push(0); fishList.push({ x: c * blockSize + 20, y: i * blockSize + 20, radius: 8 }); } 
+            else if (char === 'E') { rowArr.push(0); entities.push(new HorizontalRedCube(c, i)); } 
+            else if (char === 'V') { rowArr.push(0); entities.push(new VerticalRedCube(c, i)); } 
+            else rowArr.push(0);
         }
         map.push(rowArr);
     }
@@ -681,10 +477,7 @@ function parseMap(levelStr) {
 }
 
 function initLevel(index) {
-    if (index >= allLevels.length) {
-        winScreen.style.display = 'block';
-        return;
-    }
+    if (index >= allLevels.length) { winScreen.style.display = 'block'; return; }
     currentLevelIndex = index;
     levelDisplay.textContent = currentLevelIndex + 1;
     currentMap = parseMap(allLevels[currentLevelIndex]);
@@ -727,8 +520,7 @@ function update() {
     }
     for (let entity of entities) {
         entity.move();
-        if (player.x < entity.x + entity.size && player.x + player.size > entity.x &&
-            player.y < entity.y + entity.size && player.y + player.size > entity.y) {
+        if (player.x < entity.x + entity.size && player.x + player.size > entity.x && player.y < entity.y + entity.size && player.y + player.size > entity.y) {
             resetPlayerPosition();
         }
     }
@@ -779,11 +571,7 @@ function draw() {
     player.draw(ctx, catImage);
 }
 
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
+function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
 
 window.addEventListener('keydown', (e) => { keys[e.key] = true; });
 window.addEventListener('keyup', (e) => { keys[e.key] = false; });
@@ -803,19 +591,9 @@ document.getElementById('btnEditorMode').addEventListener('click', () => {
     document.getElementById('btnGameMode').classList.remove('active');
 });
 
-document.getElementById('btnPrevLevel').addEventListener('click', () => {
-    if (currentLevelIndex > 0) initLevel(currentLevelIndex - 1);
-});
-
-document.getElementById('btnNextLevel').addEventListener('click', () => {
-    if (currentLevelIndex < allLevels.length - 1) initLevel(currentLevelIndex + 1);
-});
-
-document.getElementById('btnContinue').addEventListener('click', () => {
-    winScreen.style.display = 'none';
-    currentLevelIndex = 0;
-    initLevel(0);
-});
+document.getElementById('btnPrevLevel').addEventListener('click', () => { if (currentLevelIndex > 0) initLevel(currentLevelIndex - 1); });
+document.getElementById('btnNextLevel').addEventListener('click', () => { if (currentLevelIndex < allLevels.length - 1) initLevel(currentLevelIndex + 1); });
+document.getElementById('btnContinue').addEventListener('click', () => { winScreen.style.display = 'none'; currentLevelIndex = 0; initLevel(0); });
 
 function updateLevelsList() {
     const list = document.getElementById('levelsList');
@@ -824,11 +602,7 @@ function updateLevelsList() {
         const item = document.createElement('div');
         item.className = 'level-item';
         const isCustom = idx >= defaultLevels.length;
-        item.innerHTML = `
-            <span>Уровень ${idx + 1} ${isCustom ? '(ваш)' : ''}</span>
-            <button onclick="initLevel(${idx})">Играть</button>
-            ${isCustom ? `<button class="delete" onclick="deleteCustomLevel(${idx - defaultLevels.length})">Удалить</button>` : ''}
-        `;
+        item.innerHTML = `<span>Ур. ${idx + 1} ${isCustom ? '(ваш)' : ''}</span><button onclick="initLevel(${idx})">Играть</button>${isCustom ? `<button class="delete" onclick="deleteCustomLevel(${idx - defaultLevels.length})">Удалить</button>` : ''}`;
         list.appendChild(item);
     });
 }
@@ -847,11 +621,7 @@ const grid = document.getElementById('grid');
 const cells = [];
 let currentTool = 'wall';
 let isDrawing = false;
-
-const toolToChar = {
-    'wall': '1', 'start': '2', 'exit': '3',
-    'fish': 'F', 'enemy-e': 'E', 'enemy-v': 'V', 'eraser': '.'
-};
+const toolToChar = {'wall': '1', 'start': '2', 'exit': '3', 'fish': 'F', 'enemy-e': 'E', 'enemy-v': 'V', 'eraser': '.'};
 
 function initGrid() {
     grid.innerHTML = '';
@@ -882,34 +652,18 @@ function setCell(r, c, tool) {
     cell.textContent = tool === 'eraser' ? '' : toolToChar[tool];
 }
 
-function getCellTool(r, c) {
-    return cells[r][c].dataset.tool || 'eraser';
-}
-
-function paint(r, c) {
-    setCell(r, c, currentTool);
-}
+function getCellTool(r, c) { return cells[r][c].dataset.tool || 'eraser'; }
+function paint(r, c) { setCell(r, c, currentTool); }
 
 grid.addEventListener('mousedown', (e) => {
     e.preventDefault();
     isDrawing = true;
     const r = +e.target.dataset.r, c = +e.target.dataset.c;
     if (isNaN(r)) return;
-    if (e.button === 2) {
-        const oldTool = currentTool;
-        currentTool = 'eraser';
-        paint(r, c);
-        currentTool = oldTool;
-    } else paint(r, c);
+    if (e.button === 2) { const old = currentTool; currentTool = 'eraser'; paint(r, c); currentTool = old; } 
+    else paint(r, c);
 });
-
-grid.addEventListener('mouseover', (e) => {
-    if (!isDrawing) return;
-    const r = +e.target.dataset.r, c = +e.target.dataset.c;
-    if (isNaN(r)) return;
-    paint(r, c);
-});
-
+grid.addEventListener('mouseover', (e) => { if (!isDrawing) return; const r = +e.target.dataset.r, c = +e.target.dataset.c; if (isNaN(r)) return; paint(r, c); });
 document.addEventListener('mouseup', () => isDrawing = false);
 grid.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -921,44 +675,22 @@ document.querySelectorAll('.tool-btn').forEach(btn => {
     });
 });
 
-document.getElementById('btnClear').addEventListener('click', () => {
-    for (let r = 0; r < ROWS; r++)
-        for (let c = 0; c < COLS; c++) setCell(r, c, 'eraser');
-    setEditorStatus('Поле очищено', 'info');
-});
-
-document.getElementById('btnFillWalls').addEventListener('click', () => {
-    for (let r = 0; r < ROWS; r++)
-        for (let c = 0; c < COLS; c++) setCell(r, c, 'wall');
-    setEditorStatus('Поле заполнено стенами', 'info');
-});
-
+document.getElementById('btnClear').addEventListener('click', () => { for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) setCell(r, c, 'eraser'); setEditorStatus('Очищено', 'info'); });
+document.getElementById('btnFillWalls').addEventListener('click', () => { for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) setCell(r, c, 'wall'); setEditorStatus('Заполнено', 'info'); });
 document.getElementById('btnValidate').addEventListener('click', () => {
     let starts = 0, exits = 0, fishes = 0;
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            const t = getCellTool(r, c);
-            if (t === 'start') starts++;
-            if (t === 'exit') exits++;
-            if (t === 'fish') fishes++;
-        }
-    }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const t = getCellTool(r, c); if (t === 'start') starts++; if (t === 'exit') exits++; if (t === 'fish') fishes++; }
     const errors = [];
-    if (starts === 0) errors.push('❌ Нет стартовой позиции');
+    if (starts === 0) errors.push('❌ Нет старта');
     if (exits === 0) errors.push('❌ Нет выхода');
     if (fishes === 0) errors.push('⚠️ Нет рыбок');
     if (errors.length) setEditorStatus(errors.join('<br>'), 'err');
-    else setEditorStatus(`✅ Уровень валиден! Рыбок: ${fishes}`, 'ok');
+    else setEditorStatus(`✅ Валиден! Рыбок: ${fishes}`, 'ok');
 });
 
 document.getElementById('btnTestLevel').addEventListener('click', () => {
     let levelStr = '';
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            const t = getCellTool(r, c);
-            levelStr += toolToChar[t];
-        }
-    }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
     allLevels.push(levelStr);
     currentLevelIndex = allLevels.length - 1;
     document.getElementById('gameMode').classList.add('active');
@@ -966,22 +698,17 @@ document.getElementById('btnTestLevel').addEventListener('click', () => {
     document.getElementById('btnGameMode').classList.add('active');
     document.getElementById('btnEditorMode').classList.remove('active');
     initLevel(currentLevelIndex);
-    setEditorStatus('▶️ Тестирование уровня...', 'info');
+    setEditorStatus('▶️ Тест...', 'info');
 });
 
 document.getElementById('btnSaveLevel').addEventListener('click', () => {
     let levelStr = '';
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            const t = getCellTool(r, c);
-            levelStr += toolToChar[t];
-        }
-    }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
     customLevels.push(levelStr);
     localStorage.setItem('customLevels', JSON.stringify(customLevels));
     allLevels = [...defaultLevels, ...customLevels];
     updateLevelsList();
-    setEditorStatus('💾 Уровень сохранён!', 'ok');
+    setEditorStatus('💾 Сохранён!', 'ok');
 });
 
 function setEditorStatus(msg, type) {
