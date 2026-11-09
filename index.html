@@ -279,119 +279,49 @@
     </div>
 
     <!-- РЕДАКТОР -->
-    <div id="editorMode" class="mode">
-        <div class="editor-panel">
-            <h2>🛠️ Инструменты</h2>
-            <button class="tool-btn active" data-tool="wall">
-                <span class="tool-icon icon-wall">1</span> Стена
-            </button>
-            <button class="tool-btn" data-tool="start">
-                <span class="tool-icon icon-start">2</span> Старт
-            </button>
-            <button class="tool-btn" data-tool="exit">
-                <span class="tool-icon icon-exit">3</span> Выход
-            </button>
-            <button class="tool-btn" data-tool="fish">
-                <span class="tool-icon icon-fish">F</span> Рыбка
-            </button>
-            <button class="tool-btn" data-tool="enemy-e">
-                <span class="tool-icon icon-enemy-e">E</span> Враг →
-            </button>
-            <button class="tool-btn" data-tool="enemy-v">
-                <span class="tool-icon icon-enemy-v">V</span> Враг ↕
-            </button>
-            <button class="tool-btn" data-tool="eraser">
-                <span class="tool-icon icon-eraser">.</span> Ластик
-            </button>
+   <!-- РЕДАКТОР -->
+<div id="editorMode" class="mode">
+    <div class="editor-tools">
+        <h2>🛠️ Инструменты</h2>
+        <button class="tool-btn active" data-tool="wall">
+            <span class="tool-icon icon-wall">1</span> Стена
+        </button>
+        <button class="tool-btn" data-tool="start">
+            <span class="tool-icon icon-start">2</span> Старт
+        </button>
+        <button class="tool-btn" data-tool="exit">
+            <span class="tool-icon icon-exit">3</span> Выход
+        </button>
+        <button class="tool-btn" data-tool="fish">
+            <span class="tool-icon icon-fish">F</span> Рыбка
+        </button>
+        <button class="tool-btn" data-tool="enemy-e">
+            <span class="tool-icon icon-enemy-e">E</span> Враг →
+        </button>
+        <button class="tool-btn" data-tool="enemy-v">
+            <span class="tool-icon icon-enemy-v">V</span> Враг ↕
+        </button>
+        <button class="tool-btn" data-tool="eraser">
+            <span class="tool-icon icon-eraser">.</span> Ластик
+        </button>
 
-            <h2 style="margin-top:20px;">⚡ Действия</h2>
+        <h2 style="margin-top:20px;">⚡ Действия</h2>
+        <div class="editor-actions">
             <button class="action-btn danger" id="btnClear">🗑️ Очистить</button>
             <button class="action-btn" id="btnFillWalls">🧱 Заполнить стенами</button>
             <button class="action-btn success" id="btnValidate">✅ Проверить</button>
-            <button class="action-btn warning" id="btnTestLevel">▶️ Тестировать уровень</button>
-            <button class="action-btn success" id="btnSaveLevel">💾 Сохранить уровень</button>
-        </div>
-
-        <div class="editor-panel">
-            <h2>🎮 Сетка 20×15</h2>
-            <div id="grid"></div>
-            <div class="status info" id="editorStatus">Готов к работе</div>
-            <p style="margin-top:10px; font-size:12px; color:#a6adc8;">
-                💡 Зажмите мышь и водите по сетке. ПКМ — ластик.
-            </p>
+            <button class="action-btn warning" id="btnTestLevel">▶️ Тестировать</button>
+            <button class="action-btn success" id="btnSaveLevel">💾 Сохранить</button>
         </div>
     </div>
 
-<script>
-// === КЛАССЫ ИГРЫ ===
-class Player {
-    constructor() {
-        this.size = 22;
-        this.speed = 3;
-        this.x = 0;
-        this.y = 0;
-    }
-    move(keys) {
-        let nextX = this.x, nextY = this.y;
-        if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) nextY -= this.speed;
-        if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) nextY += this.speed;
-        if (!checkCollision(this.x, nextY, this.size)) this.y = nextY;
-        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) nextX -= this.speed;
-        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) nextX += this.speed;
-        if (!checkCollision(nextX, this.y, this.size)) this.x = nextX;
-    }
-    draw(ctx, catImage) {
-        if (catImage.complete && catImage.naturalWidth !== 0) {
-            ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
-        } else {
-            ctx.fillStyle = '#FF8000';
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(this.x, this.y, this.size, this.size);
-        }
-    }
-}
-
-class HorizontalRedCube {
-    constructor(c, i) {
-        this.size = 20;
-        this.x = c * blockSize + 5;
-        this.y = i * blockSize + 5;
-        this.dx = Math.random() > 0.5 ? 1.5 : -1.5;
-        this.dy = 0;
-    }
-    move() {
-        let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
-        if (checkCollision(nextEx, nextEy, this.size)) {
-            this.dx = -this.dx;
-            this.dy = -this.dy;
-        } else {
-            this.x = nextEx;
-            this.y = nextEy;
-        }
-    }
-}
-
-class VerticalRedCube {
-    constructor(c, i) {
-        this.size = 20;
-        this.x = c * blockSize + 5;
-        this.y = i * blockSize + 5;
-        this.dx = 0;
-        this.dy = Math.random() > 0.5 ? 1.5 : -1.5;
-    }
-    move() {
-        let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
-        if (checkCollision(nextEx, nextEy, this.size)) {
-            this.dx = -this.dx;
-            this.dy = -this.dy;
-        } else {
-            this.x = nextEx;
-            this.y = nextEy;
-        }
-    }
-}
+    <div class="editor-canvas-wrap">
+        <h2>🎮 Сетка 20×15</h2>
+        <div id="grid"></div>
+        <div class="editor-status info" id="editorStatus">Готов к работе</div>
+        <p class="editor-hint">💡 Зажмите мышь и водите по сетке. ПКМ — ластик.</p>
+    </div>
+</div>
 
 // === ГОТОВЫЕ УРОВНИ ===
 const defaultLevels = [
