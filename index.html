@@ -3,330 +3,675 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Подключение шрифта Pixelify Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <title>Игра "Лабиринт" + Редактор</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Pixel Cat Maze</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        html, body {
-            height: 100vh;
-            overflow: hidden;
+        :root {
+            --bg-dark: #1e1e2e;
+            --ui-bg: rgba(0, 0, 0, 0.85);
+            --accent: #89b4fa;
+            --danger: #f38ba8;
+            --success: #a6e3a1;
         }
-        
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box;
+            border-radius: 0 !important;
+            font-family: 'Pixelify Sans', monospace, sans-serif !important;
+            -webkit-font-smoothing: none !important;
+            -moz-osx-font-smoothing: none !important;
+            font-smooth: never !important;
+            text-rendering: optimizeSpeed !important;
+            image-rendering: pixelated !important;
+        }
+        html, body { height: 100vh; overflow: hidden; background: #11111b; color: white; }
         body {
             background-image: url('cats.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed;
             display: flex;
             flex-direction: column;
-            color: white;
+            align-items: center;
         }
         
+        /* Навигация */
         .nav {
-            background: rgba(0,0,0,0.85);
-            padding: 8px 20px;
+            background: var(--ui-bg);
+            padding: 10px 20px;
             display: flex;
             gap: 10px;
-            justify-content: center;
             backdrop-filter: blur(10px);
             flex-shrink: 0;
+            width: 100%;
+            justify-content: center;
+            border-bottom: 2px solid #313244;
         }
         .nav button {
             padding: 8px 20px;
-            border: none;
+            border: 2px solid transparent;
             background: #45475a;
             color: white;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 #313244;
         }
-        .nav button:hover { background: #585b70; }
-        .nav button.active { background: #89b4fa; color: #1e1e2e; }
-        
-        .mode { 
-            display: none; 
-            flex: 1;
-            overflow: hidden;
-        }
-        .mode.active { display: flex; }
-        
-        #gameMode.active {
-            flex-direction: row;
-            gap: 15px;
-            padding: 10px;
-        }
-        
+        .nav button:active { transform: translateY(4px); box-shadow: 0 0 0 #313244; }
+        .nav button.active { background: var(--accent); color: #1e1e2e; border-color: #b4befe; }
+
+        .mode { display: none; flex: 1; width: 100%; max-width: 1200px; padding: 15px; overflow: hidden; }
+        .mode.active { display: flex; gap: 15px; justify-content: center; align-items: flex-start; }
+
+        /* Игровой режим */
+        #gameMode.active { flex-direction: row; }
         .game-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            min-width: 0;
+            gap: 10px;
         }
-        
         .ui-panel {
-            background: rgba(0,0,0,0.75);
-            padding: 8px 20px;
-            font-size: 16px;
+            background: var(--ui-bg);
+            padding: 10px 25px;
+            font-size: 18px;
             font-weight: 600;
             backdrop-filter: blur(5px);
             display: flex;
-            gap: 20px;
-            flex-shrink: 0;
+            gap: 30px;
+            border: 2px solid #313244;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.5);
         }
-        .fish-count { color: #fffa65; }
+        .fish-count { color: #f9e2af; }
         
         canvas {
-            background: rgba(244,164,96,0.95);
-            border: 2px solid #000;
+            background: #f4a261;
+            border: 4px solid #11111b;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.6);
             max-width: 100%;
-            max-height: calc(100vh - 120px);
+            max-height: calc(100vh - 140px);
             object-fit: contain;
         }
-        
-        .game-controls {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
+        canvas.shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
         }
+
+        .game-controls { display: flex; gap: 10px; }
         .game-controls button {
-            padding: 6px 16px;
+            padding: 8px 20px;
             border: none;
-            background: #89b4fa;
+            background: var(--accent);
             color: #1e1e2e;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
+            box-shadow: 0 4px 0 #6c9ad6;
         }
-        .game-controls button:hover { background: #74c7ec; }
-        
-        .win-screen {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            padding: 30px 50px;
-            text-align: center;
-            display: none;
-            z-index: 100;
-        }
-        .win-screen h1 { color: #008000; font-size: 36px; margin-bottom: 15px; font-weight: 700; }
-        .win-screen button {
-            margin-top: 15px;
-            padding: 10px 25px;
-            font-size: 16px;
-            border: none;
-            background: #89b4fa;
-            color: #1e1e2e;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .levels-list {
-            background: rgba(0,0,0,0.8);
-            padding: 12px;
-            width: 200px;
-            overflow-y: auto;
-            flex-shrink: 0;
-            backdrop-filter: blur(10px);
-        }
-        .levels-list h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; font-weight: 600; }
-        .level-item {
-            padding: 8px;
-            margin-bottom: 6px;
-            background: #45475a;
+        .game-controls button:active { transform: translateY(4px); box-shadow: 0 0 0 #6c9ad6; }
+
+        .levels-panel {
+            background: var(--ui-bg);
+            padding: 15px;
+            width: 220px;
+            border: 2px solid #313244;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 10px;
+            max-height: calc(100vh - 140px);
         }
-        .level-item span { font-size: 12px; }
+        .levels-panel h2 { color: var(--accent); font-size: 16px; text-align: center; }
+        .level-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .level-item {
+            padding: 8px;
+            background: #313244;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
         .level-item button {
             padding: 4px 10px;
             border: none;
-            background: #89b4fa;
+            background: var(--accent);
             color: #1e1e2e;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 11px;
         }
-        .level-item button.delete { background: #f38ba8; }
-        
-        #editorMode.active {
-            flex-direction: row;
-            gap: 10px;
-            padding: 10px;
+        .level-item button.del { background: var(--danger); color: white; }
+
+        /* Экран победы и Туториал */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
         }
-        
+        .overlay.active { display: flex; }
+        .overlay-box {
+            background: #1e1e2e;
+            border: 4px solid var(--accent);
+            padding: 30px 50px;
+            text-align: center;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.5);
+            max-width: 400px;
+        }
+        .overlay-box h1 { color: var(--success); font-size: 32px; margin-bottom: 15px; }
+        .overlay-box p { margin-bottom: 20px; line-height: 1.5; color: #cdd6f4; }
+        .overlay-box button {
+            padding: 10px 30px;
+            background: var(--accent);
+            color: #1e1e2e;
+            border: none;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #6c9ad6;
+        }
+        .overlay-box button:active { transform: translateY(4px); box-shadow: 0 0 0 #6c9ad6; }
+
+        /* Редактор */
+        #editorMode.active { flex-direction: row; }
         .editor-tools {
-            background: rgba(0,0,0,0.8);
-            padding: 12px;
-            width: 180px;
-            flex-shrink: 0;
-            backdrop-filter: blur(10px);
-            overflow-y: auto;
+            background: var(--ui-bg);
+            padding: 15px;
+            width: 200px;
+            border: 2px solid #313244;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .editor-tools h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; font-weight: 600; }
         .tool-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             width: 100%;
             padding: 8px;
-            margin-bottom: 5px;
             border: 2px solid transparent;
-            background: #45475a;
+            background: #313244;
             color: white;
             cursor: pointer;
             font-size: 13px;
-            transition: all 0.15s;
+            font-weight: 600;
         }
-        .tool-btn:hover { background: #585b70; }
-        .tool-btn.active { border-color: #89b4fa; }
+        .tool-btn:hover { background: #45475a; }
+        .tool-btn.active { border-color: var(--accent); background: #45475a; }
         .tool-icon {
             width: 20px; height: 20px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 11px;
-            flex-shrink: 0;
+            font-weight: 700; font-size: 12px;
         }
         .icon-wall { background: #269926; }
         .icon-start { background: #00bfff; }
         .icon-exit { background: #2ed573; }
-        .icon-fish { background: #FFB000; }
-        .icon-enemy-e { background: #FF0000; }
-        .icon-enemy-v { background: #FF4444; }
+        .icon-fish { background: #f9e2af; color: #1e1e2e; }
+        .icon-enemy-e { background: #f38ba8; }
+        .icon-enemy-v { background: #f38ba8; }
         .icon-eraser { background: #f4a261; }
-        
-        .editor-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-top: 12px;
-        }
+
+        .editor-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
         .action-btn {
-            width: 100%;
-            padding: 8px;
+            width: 100%; padding: 8px;
             border: none;
-            background: #89b4fa;
+            background: var(--accent);
             color: #1e1e2e;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             font-size: 12px;
-            transition: opacity 0.15s;
+            box-shadow: 0 3px 0 #6c9ad6;
         }
-        .action-btn:hover { opacity: 0.85; }
-        .action-btn.danger { background: #f38ba8; }
-        .action-btn.success { background: #a6e3a1; }
-        .action-btn.warning { background: #f9e2af; }
-        
+        .action-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #6c9ad6; }
+        .action-btn.danger { background: var(--danger); color: white; box-shadow: 0 3px 0 #c3687f; }
+        .action-btn.success { background: var(--success); box-shadow: 0 3px 0 #85c281; }
+
         .editor-canvas-wrap {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 0;
         }
-        .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; font-weight: 600; flex-shrink: 0; }
-        
         #grid {
             display: grid;
-            grid-template-columns: repeat(32, 25px);
-            grid-template-rows: repeat(18, 25px);
+            grid-template-columns: repeat(24, 30px);
+            grid-template-rows: repeat(13, 30px);
             gap: 1px;
-            background: #1e1e2e;
-            border: 2px solid #585b70;
+            background: #11111b;
+            border: 4px solid #313244;
             cursor: crosshair;
             user-select: none;
-            flex-shrink: 0;
         }
         .cell {
-            width: 25px; height: 25px;
+            width: 30px; height: 30px;
             background: #f4a261;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700;
-            transition: background 0.05s;
+            font-size: 14px; font-weight: 700;
+            color: rgba(0,0,0,0.5);
         }
-        .cell.wall { background: #269926; }
+        .cell.wall { background: #269926; color: rgba(255,255,255,0.3); }
         .cell.start { background: #00bfff; }
         .cell.exit { background: #2ed573; }
-        
+        .cell.fish { background: #f4a261; }
+        .cell.enemy-e, .cell.enemy-v { background: #f4a261; }
+
         .editor-status {
-            margin-top: 10px;
-            padding: 8px;
-            font-size: 12px;
-            text-align: center;
-            flex-shrink: 0;
+            margin-top: 10px; padding: 8px;
+            font-size: 12px; text-align: center;
+            background: #313244; width: 100%; max-width: 720px;
         }
-        .editor-status.ok { background: #a6e3a1; color: #1e1e2e; }
-        .editor-status.err { background: #f38ba8; color: #1e1e2e; }
-        .editor-status.info { background: #89b4fa; color: #1e1e2e; }
+        .editor-status.ok { background: var(--success); color: #1e1e2e; }
+        .editor-status.err { background: var(--danger); color: white; }
         
-        .editor-hint {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #a6adc8;
-            text-align: center;
-            flex-shrink: 0;
+        .io-panel {
+            background: var(--ui-bg);
+            padding: 15px;
+            width: 250px;
+            border: 2px solid #313244;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        
-                /* === ГЛОБАЛЬНЫЕ СТИЛИ: ОСТРЫЕ УГЛЫ И МАКСИМАЛЬНО ЧЁТКИЙ ПИКСЕЛЬНЫЙ ШРИФТ === */
-        * { 
-            border-radius: 0 !important;
-            font-family: 'Pixelify Sans', monospace, sans-serif !important;
-            
-            /* Агрессивное отключение сглаживания для хрустящих пикселей */
-            -webkit-font-smoothing: none !important;
-            -moz-osx-font-smoothing: none !important;
-            font-smooth: never !important;
-            text-rendering: optimizeSpeed !important;
+        .io-panel textarea {
+            width: 100%; height: 100px;
+            background: #11111b; color: #cdd6f4;
+            border: 2px solid #313244;
+            font-size: 11px; padding: 8px;
+            resize: none;
         }
-        
     </style>
 </head>
 <body>
 
     <div class="nav">
-        <button id="btnGameMode" class="active">🎮 Играть</button>
-        <button id="btnEditorMode">🛠️ Редактор</button>
+        <button id="btnGameMode" class="active">🎮 ИГРА</button>
+        <button id="btnEditorMode">🛠️ РЕДАКТОР</button>
+    </div>
+
+    <!-- ИГРОВОЙ РЕЖИМ -->
+    <div id="gameMode" class="mode active">
+        <div class="game-container">
+            <div class="ui-panel">
+                <div>УРОВЕНЬ: <span id="levelDisplay">1</span></div>
+                <div class="fish-count">РЫБОК: <span id="fishDisplay">0</span></div>
+            </div>
+            <canvas id="gameCanvas" width="960" height="540"></canvas>
+            <div class="game-controls">
+                <button id="btnPrevLevel">← НАЗАД</button>
+                <button id="btnNextLevel">ВПЕРЁД →</button>
+            </div>
+        </div>
+        <div class="levels-panel">
+            <h2>📋 УРОВНИ</h2>
+            <div class="level-list" id="levelsList"></div>
+            <button class="action-btn" onclick="exportLevels()">📤 ЭКСПОРТ ВСЕХ</button>
+        </div
+</think>
+
+Вот полностью переработанный, "отполированный" код. Я учёл всю критику и превратил проект в законченную инди-игру.
+
+### 🌟 Что нового и исправленного:
+1. **Размер и сетка**: Canvas теперь 960×540 (идеальный 16:9 для любых экранов). Сетка пересчитана на 24×13 клеток.
+2. **Железобетонный пиксель-арт**: Добавлены `image-rendering: pixelated` и строгие правила отключения сглаживания. Шрифт больше не мылится.
+3. **Звук без файлов**: Встроенный синтезатор (Web Audio API). Звуки сбора, смерти, победы и кликов генерируются кодом (никаких внешних mp3!).
+4. **Сочные эффекты**: 
+   - При сборе рыбки разлетаются пиксельные частицы.
+   - При смерти экран трясётся (`shake`), а котик мигает (1 секунда неуязвимости).
+   - Рыбки плавно покачиваются (bobbing animation).
+5. **Редактор уровня**: 
+   - Добавлена история действий: нажми **Ctrl+Z**, чтобы отменить последнее действие!
+   - Сетка теперь отображается красивыми цветными блоками, а не текстом "1".
+6. **UX**: Добавлен туториал для первого уровня, компактный список уровней и кнопки Экспорта/Импорта уровней в JSON.
+
+### 📋 Скопируй этот код и полностью замени им свой `index.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Pixel Cat Maze</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e2e;
+            --ui-bg: rgba(0, 0, 0, 0.85);
+            --accent: #89b4fa;
+            --danger: #f38ba8;
+            --success: #a6e3a1;
+        }
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box;
+            border-radius: 0 !important;
+            font-family: 'Pixelify Sans', monospace, sans-serif !important;
+            -webkit-font-smoothing: none !important;
+            -moz-osx-font-smoothing: none !important;
+            font-smooth: never !important;
+            text-rendering: optimizeSpeed !important;
+            image-rendering: pixelated !important;
+        }
+        html, body { height: 100vh; overflow: hidden; background: #11111b; color: white; }
+        body {
+            background-image: url('cats.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .nav {
+            background: var(--ui-bg);
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            width: 100%;
+            justify-content: center;
+            border-bottom: 2px solid #313244;
+        }
+        .nav button {
+            padding: 8px 20px;
+            border: 2px solid transparent;
+            background: #45475a;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 #313244;
+        }
+        .nav button:active { transform: translateY(4px); box-shadow: 0 0 0 #313244; }
+        .nav button.active { background: var(--accent); color: #1e1e2e; border-color: #b4befe; }
+
+        .mode { display: none; flex: 1; width: 100%; max-width: 1200px; padding: 15px; overflow: hidden; }
+        .mode.active { display: flex; gap: 15px; justify-content: center; align-items: flex-start; }
+
+        #gameMode.active { flex-direction: row; }
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .ui-panel {
+            background: var(--ui-bg);
+            padding: 10px 25px;
+            font-size: 18px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            display: flex;
+            gap: 30px;
+            border: 2px solid #313244;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.5);
+        }
+        .fish-count { color: #f9e2af; }
+        
+        canvas {
+            background: #f4a261;
+            border: 4px solid #11111b;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.6);
+            max-width: 100%;
+            max-height: calc(100vh - 140px);
+            object-fit: contain;
+        }
+        canvas.shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .game-controls { display: flex; gap: 10px; }
+        .game-controls button {
+            padding: 8px 20px;
+            border: none;
+            background: var(--accent);
+            color: #1e1e2e;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 0 #6c9ad6;
+        }
+        .game-controls button:active { transform: translateY(4px); box-shadow: 0 0 0 #6c9ad6; }
+
+        .levels-panel {
+            background: var(--ui-bg);
+            padding: 15px;
+            width: 220px;
+            border: 2px solid #313244;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: calc(100vh - 140px);
+        }
+        .levels-panel h2 { color: var(--accent); font-size: 16px; text-align: center; }
+        .level-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .level-item {
+            padding: 8px;
+            background: #313244;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        .level-item button {
+            padding: 4px 10px;
+            border: none;
+            background: var(--accent);
+            color: #1e1e2e;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .level-item button.del { background: var(--danger); color: white; }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        .overlay.active { display: flex; }
+        .overlay-box {
+            background: #1e1e2e;
+            border: 4px solid var(--accent);
+            padding: 30px 40px;
+            text-align: center;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.5);
+            max-width: 400px;
+        }
+        .overlay-box h1 { color: var(--success); font-size: 32px; margin-bottom: 15px; }
+        .overlay-box p { margin-bottom: 20px; line-height: 1.5; color: #cdd6f4; font-size: 14px; }
+        .overlay-box button {
+            padding: 10px 30px;
+            background: var(--accent);
+            color: #1e1e2e;
+            border: none;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #6c9ad6;
+        }
+        .overlay-box button:active { transform: translateY(4px); box-shadow: 0 0 0 #6c9ad6; }
+
+        #editorMode.active { flex-direction: row; }
+        .editor-tools {
+            background: var(--ui-bg);
+            padding: 15px;
+            width: 200px;
+            border: 2px solid #313244;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 8px;
+            border: 2px solid transparent;
+            background: #313244;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .tool-btn:hover { background: #45475a; }
+        .tool-btn.active { border-color: var(--accent); background: #45475a; }
+        .tool-icon {
+            width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 12px;
+        }
+        .icon-wall { background: #269926; }
+        .icon-start { background: #00bfff; }
+        .icon-exit { background: #2ed573; }
+        .icon-fish { background: #f9e2af; color: #1e1e2e; }
+        .icon-enemy-e { background: #f38ba8; }
+        .icon-enemy-v { background: #f38ba8; }
+        .icon-eraser { background: #f4a261; }
+
+        .editor-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .action-btn {
+            width: 100%; padding: 8px;
+            border: none;
+            background: var(--accent);
+            color: #1e1e2e;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 12px;
+            box-shadow: 0 3px 0 #6c9ad6;
+        }
+        .action-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #6c9ad6; }
+        .action-btn.danger { background: var(--danger); color: white; box-shadow: 0 3px 0 #c3687f; }
+        .action-btn.success { background: var(--success); box-shadow: 0 3px 0 #85c281; }
+
+        .editor-canvas-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(24, 30px);
+            grid-template-rows: repeat(13, 30px);
+            gap: 1px;
+            background: #11111b;
+            border: 4px solid #313244;
+            cursor: crosshair;
+            user-select: none;
+        }
+        .cell {
+            width: 30px; height: 30px;
+            background: #f4a261;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+            color: rgba(0,0,0,0.5);
+        }
+        .cell.wall { background: #269926; color: rgba(255,255,255,0.3); }
+        .cell.start { background: #00bfff; }
+        .cell.exit { background: #2ed573; }
+        
+        .editor-status {
+            margin-top: 10px; padding: 8px;
+            font-size: 12px; text-align: center;
+            background: #313244; width: 100%; max-width: 720px;
+        }
+        .editor-status.ok { background: var(--success); color: #1e1e2e; }
+        .editor-status.err { background: var(--danger); color: white; }
+        
+        .io-panel {
+            background: var(--ui-bg);
+            padding: 15px;
+            width: 250px;
+            border: 2px solid #313244;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .io-panel textarea {
+            width: 100%; height: 100px;
+            background: #11111b; color: #cdd6f4;
+            border: 2px solid #313244;
+            font-size: 11px; padding: 8px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <button id="btnGameMode" class="active">🎮 ИГРА</button>
+        <button id="btnEditorMode">🛠️ РЕДАКТОР</button>
     </div>
 
     <div id="gameMode" class="mode active">
         <div class="game-container">
             <div class="ui-panel">
-                <div>Уровень: <span id="levelDisplay">1</span></div>
-                <div class="fish-count">Рыбок: <span id="fishDisplay">0</span></div>
+                <div>УРОВЕНЬ: <span id="levelDisplay">1</span></div>
+                <div class="fish-count">РЫБОК: <span id="fishDisplay">0</span></div>
             </div>
-            <canvas id="gameCanvas" width="1280" height="720"></canvas>
+            <canvas id="gameCanvas" width="960" height="540"></canvas>
             <div class="game-controls">
-                <button id="btnPrevLevel">← Назад</button>
-                <button id="btnNextLevel">Вперёд →</button>
+                <button id="btnPrevLevel">← НАЗАД</button>
+                <button id="btnNextLevel">ВПЕРЁД →</button>
             </div>
         </div>
-        <div class="levels-list">
-            <h2>📋 Уровни</h2>
-            <div id="levelsList"></div>
+        <div class="levels-panel">
+            <h2>📋 УРОВНИ</h2>
+            <div class="level-list" id="levelsList"></div>
+            <button class="action-btn" onclick="exportLevels()">📤 ЭКСПОРТ ВСЕХ</button>
+            <button class="action-btn" onclick="importLevelsPrompt()">📥 ИМПОРТ</button>
         </div>
     </div>
 
-    <div class="win-screen" id="winScreen">
-        <h1>🎉 Победа!</h1>
-        <p>Вы собрали всю рыбку!</p>
-        <button id="btnContinue">Играть сначала</button>
+    <div class="overlay" id="tutorialOverlay">
+        <div class="overlay-box">
+            <h1>🐾 ПРИВЕТ!</h1>
+            <p>Собирай рыбок (<b>F</b>), избегай красных кубов (<b>E</b>, <b>V</b>).<br>
+            Когда соберёшь всех, иди на выход (<b>3</b>).<br><br>
+            Управление: <b>WASD</b> или <b>Стрелки</b></p>
+            <button onclick="closeTutorial()">ПОНЯТНО!</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="winOverlay">
+        <div class="overlay-box">
+            <h1>🎉 ПОБЕДА!</h1>
+            <p>Ты прошёл все уровни!<br>Мяу-гениально!</p>
+            <button onclick="resetGame()">ИГРАТЬ СНОВА</button>
+        </div>
     </div>
 
     <div id="editorMode" class="mode">
         <div class="editor-tools">
-            <h2>🛠️ Инструменты</h2>
             <button class="tool-btn active" data-tool="wall"><span class="tool-icon icon-wall">1</span> Стена</button>
             <button class="tool-btn" data-tool="start"><span class="tool-icon icon-start">2</span> Старт</button>
             <button class="tool-btn" data-tool="exit"><span class="tool-icon icon-exit">3</span> Выход</button>
@@ -334,400 +679,75 @@
             <button class="tool-btn" data-tool="enemy-e"><span class="tool-icon icon-enemy-e">E</span> Враг →</button>
             <button class="tool-btn" data-tool="enemy-v"><span class="tool-icon icon-enemy-v">V</span> Враг ↕</button>
             <button class="tool-btn" data-tool="eraser"><span class="tool-icon icon-eraser">.</span> Ластик</button>
-
-            <h2 style="margin-top:15px;">⚡ Действия</h2>
             <div class="editor-actions">
-                <button class="action-btn danger" id="btnClear">🗑️ Очистить</button>
-                <button class="action-btn" id="btnFillWalls">🧱 Заполнить</button>
-                <button class="action-btn success" id="btnValidate">✅ Проверить</button>
-                <button class="action-btn warning" id="btnTestLevel">▶️ Тест</button>
-                <button class="action-btn success" id="btnSaveLevel">💾 Сохранить</button>
-            </div>
+                <button class="action-btn danger" id="btnClear">🗑️ ОЧИСТИТЬ</button>
+                <button class="action-btn" id="btnFillWalls">🧱 СТЕНЫ</button>
+                <button class="action-btn success" id="btnValidate">✅ ПРОВЕРИТЬ</button>
+                <button class="action-btn success" id="btnSaveLevel">💾 СОХРАНИТЬ</button>
+                <button class="action-btn" id="btnTestLevel">▶️ ТЕСТ</button>
+           8px; font-size: 11px; color: #a6adc8; text-align: center; margin-top: 5px;">💡 ЛКМ: рисовать | ПКМ: ластик | Ctrl+Z: отмена</p>
         </div>
-
         <div class="editor-canvas-wrap">
-            <h2>🎮 Сетка 32×18</h2>
             <div id="grid"></div>
             <div class="editor-status info" id="editorStatus">Готов к работе</div>
-            <p class="editor-hint">💡 Зажмите мышь и водите. ПКМ — ластик.</p>
+        </div>
+        <div class="io-panel">
+            <h2 style="color:var(--accent); font-size:14px;">📋 КОД УРОВНЯ</h2>
+            <textarea id="levelCode" placeholder="Здесь появится код..."></textarea>
+            <button class="action-btn" onclick="copyLevelCode()">📋 КОПИРОВАТЬ</button>
+            <button class="action-btn" onclick="loadLevelCode()">📂 ЗАГРУЗИТЬ</button>
         </div>
     </div>
 
 <script>
-class Player {
-    constructor() {
-        this.size = 36;
-        this.speed = 3;
-        this.x = 0;
-        this.y = 0;
-        this.walkCycle = 0;
-        this.facing = 1;
-    }
-    move(keys) {
-        let nextX = this.x, nextY = this.y;
-        let isMoving = false;
-        if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) { nextY -= this.speed; isMoving = true; }
-        if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) { nextY += this.speed; isMoving = true; }
-        if (!checkCollision(this.x, nextY, this.size)) this.y = nextY;
-        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) { nextX -= this.speed; isMoving = true; this.facing = -1; }
-        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) { nextX += this.speed; isMoving = true; this.facing = 1; }
-        if (!checkCollision(nextX, this.y, this.size)) this.x = nextX;
-        if (isMoving) this.walkCycle += 0.2;
-        else this.walkCycle = 0;
-    }
-    draw(ctx, catImage) {
-        if (catImage.complete && catImage.naturalWidth !== 0) {
-            ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
-            return;
-        }
-        ctx.save();
-        let cx = this.x + this.size / 2, cy = this.y + this.size / 2;
-        ctx.translate(cx, cy);
-        ctx.scale(this.facing, 1);
-        const p = this.size / 16;
-        let bob = (this.walkCycle > 0) ? Math.sin(this.walkCycle * 2) * 2 : 0;
-        ctx.translate(0, bob);
-        const frame1 = ["....OO..OO......", "...OOOOOOOOO....", "..OOOOOOOOOOOO..", "..OWWOOOOOOOWWO.", "..OOOOOPPOOOOO..", "...OOOOOOOOOO...", "....OOOOOOOO....", "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", ".TOOOOOOOOOOOOO.", ".TOOOOOOOOOOOOO.", "..OOOOOOOOOOOO..", "...OOOO..OOOO...", "...OOOO..OOOO...", "...BBBB..BBBB...", "................"];
-        const frame2 = ["....OO..OO......", "...OOOOOOOOO....", "..OOOOOOOOOOOO..", "..OWWOOOOOOOWWO.", "..OOOOOPPOOOOO..", "...OOOOOOOOOO...", "....OOOOOOOO....", "...OOOOOOOOOO...", "..OOOOOOOOOOOO..", "..TOOOOOOOOOOOO.", "..TOOOOOOOOOOOO.", "...OOOOOOOOOOO..", "....OOOO..OOOO..", "....OOOO..OOOO..", "....BBBB..BBBB..", "................"];
-        let frame = (this.walkCycle > 0 && Math.floor(this.walkCycle * 2) % 2 === 1) ? frame2 : frame1;
-        const colors = {'O': '#FFAA33', 'T': '#E68A00', 'B': '#222222', 'W': '#FFFFFF', 'P': '#FF8888'};
-        let startX = -8 * p, startY = -8 * p;
-        for (let r = 0; r < 16; r++) {
-            for (let c = 0; c < 16; c++) {
-                let char = frame[r][c];
-                if (char !== '.' && colors[char]) {
-                    ctx.fillStyle = colors[char];
-                    ctx.fillRect(startX + c * p, startY + r * p, p, p);
-                }
-            }
-        }
-        ctx.restore();
+// === ЗВУКОВОЙ ДВИЖОК (Web Audio API) ===
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const t = audioCtx.currentTime;
+    
+    if (type === 'collect') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.1);
+        gain.gain.setValueAtTime(0.1, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+        osc.start(t); osc.stop(t + 0.1);
+    } else if (type === 'die') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, t);
+        osc.frequency.exponentialRampToValueAtTime(50, t + 0.3);
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.start(t); osc.stop(t + 0.3);
+    } else if (type === 'win') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(400, t);
+        osc.frequency.setValueAtTime(600, t + 0.1);
+        osc.frequency.setValueAtTime(800, t + 0.2);
+        gain.gain.setValueAtTime(0.1, t);
+        gain.gain.linearRampToValueAtTime(0, t + 0.4);
+        osc.start(t); osc.stop(t + 0.4);
+    } else if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, t);
+        gain.gain.setValueAtTime(0.05, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+        osc.start(t); osc.stop(t + 0.05);
     }
 }
 
-class HorizontalRedCube {
-    constructor(c, i) {
-        this.size = 30;
-        this.x = c * 40 + 5;
-        this.y = i * 40 + 5;
-        this.dx = Math.random() > 0.5 ? 1.5 : -1.5;
-        this.dy = 0;
-    }
-    move() {
-        let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
-        if (checkCollision(nextEx, nextEy, this.size)) { this.dx = -this.dx; this.dy = -this.dy; } 
-        else { this.x = nextEx; this.y = nextEy; }
-    }
-}
-
-class VerticalRedCube {
-    constructor(c, i) {
-        this.size = 30;
-        this.x = c * 40 + 5;
-        this.y = i * 40 + 5;
-        this.dx = 0;
-        this.dy = Math.random() > 0.5 ? 1.5 : -1.5;
-    }
-    move() {
-        let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
-        if (checkCollision(nextEx, nextEy, this.size)) { this.dx = -this.dx; this.dy = -this.dy; } 
-        else { this.x = nextEx; this.y = nextEy; }
-    }
-}
-
-const defaultLevels = [
-    "11111111111111111111111111111111" + "12..............................1" + "1.11111111.11111111.11111111.11.1" + "1.1......1.1......1.1......1....1" + "1.1.F....1.1.F....1.1.F....1.F..1" + "1.1......1.1......1.1......1....1" + "1.11111111.11111111.11111111.11.1" + "1...............................1" + "1.11111111.11111111.11111111.11.1" + "1.1......1.1......1.1......1....1" + "1.1.V....1.1.V....1.1.V....1.V..1" + "1.1......1.1......1.1......1....1" + "1.11111111.11111111.11111111.11.1" + "1...............................1" + "1.11111111.11111111.11111111.11.1" + "1.1......1.1......1.1......1....1" + "1.F......1.E......1.E......1..31" + "11111111111111111111111111111111",
-    "11111111111111111111111111111111" + "12..1...1...1...1...1...1...1..1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.F.1.F.1.F.1.F.1.F.1.F.1.F.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1...1...1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.V.1.V.1.V.1.V.1.V.1.V.1.V.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1...1...1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" + "1.F.1.E.1.E.1.E.1.E.1.E.1.E.1.31" + "11111111111111111111111111111111",
-    "11111111111111111111111111111111" + "12..............................1" + "1.111111.111111.111111.111111.1" + "1.1....1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.1.V..1.1.V..1.1" + "1.1....1.1....1.1....1.1....1.1" + "1.111111.111111.111111.111111.1" + "1...............................1" + "1.111111.111111.111111.111111.1" + "1.1....1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.1.V..1.1.V..1.1" + "1.1....1.1....1.1....1.1....1.1" + "1.111111.111111.111111.111111.1" + "1...............................1" + "1.111111.111111.111111.111111.1" + "1.1....1.1....1.1....1.1....1.1" + "1.F....1.E....1.E....1.E....1.31" + "11111111111111111111111111111111",
-    "11111111111111111111111111111111" + "12..............................1" + "1.1111.11111.11111.11111.11111.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1111.11111.11111.11111.11111.1" + "1...............................1" + "1.1111.11111.11111.11111.11111.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1.V.1.1.V.1.1.V.1.1.V.1.1.V.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.1111.11111.11111.11111.11111.1" + "1...............................1" + "1.1111.11111.11111.11111.11111.1" + "1.1...1.1...1.1...1.1...1.1...1" + "1.F...1.E...1.E...1.E...1.E..31" + "11111111111111111111111111111111"
-];
-
-let customLevels = JSON.parse(localStorage.getItem('customLevels') || '[]');
-let allLevels = [...defaultLevels, ...customLevels];
-
+// === КОНСТАНТЫ И ПЕРЕМЕННЫЕ ===
+const COLS = 24, ROWS = 13;
+const blockSize = 40;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const levelDisplay = document.getElementById('levelDisplay');
-const fishDisplay = document.getElementById('fishDisplay');
-const winScreen = document.getElementById('winScreen');
-const blockSize = 40;
-const catImage = new Image();
-catImage.src = 'cat1.png';
 
-let player = new Player();
-let keys = {};
-let fishList = [];
-let entities = [];
-let currentLevelIndex = 0;
-let currentMap = [];
-
-function parseMap(levelStr) {
-    let map = [];
-    fishList = [];
-    entities = [];
-    for (let i = 0; i < 18; i++) {
-        let rowStr = levelStr.substring(i * 32, (i + 1) * 32);
-        let rowArr = [];
-        for (let c = 0; c < rowStr.length; c++) {
-            let char = rowStr[c];
-            if (char === '1') rowArr.push(1);
-            else if (char === '2') rowArr.push(2);
-            else if (char === '3') rowArr.push(3);
-            else if (char === 'F') { rowArr.push(0); fishList.push({ x: c * blockSize + 20, y: i * blockSize + 20, radius: 8 }); } 
-            else if (char === 'E') { rowArr.push(0); entities.push(new HorizontalRedCube(c, i)); } 
-            else if (char === 'V') { rowArr.push(0); entities.push(new VerticalRedCube(c, i)); } 
-            else rowArr.push(0);
-        }
-        map.push(rowArr);
-    }
-    return map;
-}
-
-function initLevel(index) {
-    if (index >= allLevels.length) { winScreen.style.display = 'block'; return; }
-    currentLevelIndex = index;
-    levelDisplay.textContent = currentLevelIndex + 1;
-    currentMap = parseMap(allLevels[currentLevelIndex]);
-    fishDisplay.textContent = fishList.length;
-    resetPlayerPosition();
-}
-
-function resetPlayerPosition() {
-    for (let r = 0; r < currentMap.length; r++) {
-        for (let c = 0; c < currentMap[r].length; c++) {
-            if (currentMap[r][c] === 2) {
-                player.x = c * blockSize + (blockSize - player.size) / 2;
-                player.y = r * blockSize + (blockSize - player.size) / 2;
-            }
-        }
-    }
-}
-
-function checkCollision(x, y, size) {
-    let corners = [{x, y}, {x: x+size, y}, {x, y: y+size}, {x: x+size, y: y+size}];
-    for (let corner of corners) {
-        let c = Math.floor(corner.x / blockSize);
-        let r = Math.floor(corner.y / blockSize);
-        if (r < 0 || r >= currentMap.length || c < 0 || c >= currentMap[r].length || currentMap[r][c] === 1) return true;
-    }
-    return false;
-}
-
-function update() {
-    player.move(keys);
-    let pCenterX = player.x + player.size / 2;
-    let pCenterY = player.y + player.size / 2;
-    for (let i = fishList.length - 1; i >= 0; i--) {
-        let fish = fishList[i];
-        let dist = Math.hypot(pCenterX - fish.x, pCenterY - fish.y);
-        if (dist < player.size / 2 + fish.radius) {
-            fishList.splice(i, 1);
-            fishDisplay.textContent = fishList.length;
-        }
-    }
-    for (let entity of entities) {
-        entity.move();
-        if (player.x < entity.x + entity.size && player.x + player.size > entity.x && player.y < entity.y + entity.size && player.y + player.size > entity.y) {
-            resetPlayerPosition();
-        }
-    }
-    if (fishList.length === 0) {
-        let centerC = Math.floor(pCenterX / blockSize);
-        let centerR = Math.floor(pCenterY / blockSize);
-        if (currentMap[centerR] && currentMap[centerR][centerC] === 3) {
-            initLevel(currentLevelIndex + 1);
-        }
-    }
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let r = 0; r < currentMap.length; r++) {
-        for (let c = 0; c < currentMap[r].length; c++) {
-            if (currentMap[r][c] === 1) {
-                ctx.fillStyle = '#269926';
-                ctx.fillRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4);
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(c * blockSize + 2, r * blockSize + 2, blockSize - 4, blockSize - 4);
-            } else if (currentMap[r][c] === 3) {
-                ctx.fillStyle = fishList.length === 0 ? '#2ed573' : '#7bed9f';
-                ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
-                if (fishList.length > 0) {
-                    ctx.fillStyle = '#333';
-                    ctx.font = "16px 'Pixelify Sans', sans-serif";
-                    ctx.fillText('🔒', c * blockSize + 10, r * blockSize + 28);
-                }
-            }
-        }
-    }
-    for (let fish of fishList) {
-        ctx.beginPath();
-        ctx.ellipse(fish.x, fish.y, fish.radius + 4, fish.radius, 0, 0, Math.PI * 2);
-        ctx.fillStyle = '#FFB000';
-        ctx.fill();
-        ctx.closePath();
-    }
-    for (let entity of entities) {
-        ctx.fillStyle = '#FF0000';
-        ctx.fillRect(entity.x, entity.y, entity.size, entity.size);
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(entity.x, entity.y, entity.size, entity.size);
-    }
-    player.draw(ctx, catImage);
-}
-
-function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
-
-window.addEventListener('keydown', (e) => { keys[e.key] = true; });
-window.addEventListener('keyup', (e) => { keys[e.key] = false; });
-
-document.getElementById('btnGameMode').addEventListener('click', () => {
-    document.getElementById('gameMode').classList.add('active');
-    document.getElementById('editorMode').classList.remove('active');
-    document.getElementById('btnGameMode').classList.add('active');
-    document.getElementById('btnEditorMode').classList.remove('active');
-    initLevel(currentLevelIndex);
-});
-
-document.getElementById('btnEditorMode').addEventListener('click', () => {
-    document.getElementById('editorMode').classList.add('active');
-    document.getElementById('gameMode').classList.remove('active');
-    document.getElementById('btnEditorMode').classList.add('active');
-    document.getElementById('btnGameMode').classList.remove('active');
-});
-
-document.getElementById('btnPrevLevel').addEventListener('click', () => { if (currentLevelIndex > 0) initLevel(currentLevelIndex - 1); });
-document.getElementById('btnNextLevel').addEventListener('click', () => { if (currentLevelIndex < allLevels.length - 1) initLevel(currentLevelIndex + 1); });
-document.getElementById('btnContinue').addEventListener('click', () => { winScreen.style.display = 'none'; currentLevelIndex = 0; initLevel(0); });
-
-function updateLevelsList() {
-    const list = document.getElementById('levelsList');
-    list.innerHTML = '';
-    allLevels.forEach((level, idx) => {
-        const item = document.createElement('div');
-        item.className = 'level-item';
-        const isCustom = idx >= defaultLevels.length;
-        item.innerHTML = `<span>Ур. ${idx + 1} ${isCustom ? '(ваш)' : ''}</span><button onclick="initLevel(${idx})">Играть</button>${isCustom ? `<button class="delete" onclick="deleteCustomLevel(${idx - defaultLevels.length})">Удалить</button>` : ''}`;
-        list.appendChild(item);
-    });
-}
-
-window.deleteCustomLevel = function(idx) {
-    customLevels.splice(idx, 1);
-    localStorage.setItem('customLevels', JSON.stringify(customLevels));
-    allLevels = [...defaultLevels, ...customLevels];
-    updateLevelsList();
-    if (currentLevelIndex >= allLevels.length) currentLevelIndex = allLevels.length - 1;
-    initLevel(currentLevelIndex);
-};
-
-const COLS = 32, ROWS = 18;
-const grid = document.getElementById('grid');
-const cells = [];
-let currentTool = 'wall';
-let isDrawing = false;
-const toolToChar = {'wall': '1', 'start': '2', 'exit': '3', 'fish': 'F', 'enemy-e': 'E', 'enemy-v': 'V', 'eraser': '.'};
-
-function initGrid() {
-    grid.innerHTML = '';
-    cells.length = 0;
-    for (let r = 0; r < ROWS; r++) {
-        cells[r] = [];
-        for (let c = 0; c < COLS; c++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.dataset.r = r;
-            cell.dataset.c = c;
-            grid.appendChild(cell);
-            cells[r][c] = cell;
-        }
-    }
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            if (r === 0 || r === ROWS-1 || c === 0 || c === COLS-1) setCell(r, c, 'wall');
-            else setCell(r, c, 'eraser');
-        }
-    }
-}
-
-function setCell(r, c, tool) {
-    const cell = cells[r][c];
-    cell.className = 'cell ' + (tool === 'eraser' ? '' : tool);
-    cell.dataset.tool = tool;
-    cell.textContent = tool === 'eraser' ? '' : toolToChar[tool];
-}
-
-function getCellTool(r, c) { return cells[r][c].dataset.tool || 'eraser'; }
-function paint(r, c) { setCell(r, c, currentTool); }
-
-grid.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    isDrawing = true;
-    const r = +e.target.dataset.r, c = +e.target.dataset.c;
-    if (isNaN(r)) return;
-    if (e.button === 2) { const old = currentTool; currentTool = 'eraser'; paint(r, c); currentTool = old; } 
-    else paint(r, c);
-});
-grid.addEventListener('mouseover', (e) => { if (!isDrawing) return; const r = +e.target.dataset.r, c = +e.target.dataset.c; if (isNaN(r)) return; paint(r, c); });
-document.addEventListener('mouseup', () => isDrawing = false);
-grid.addEventListener('contextmenu', e => e.preventDefault());
-
-document.querySelectorAll('.tool-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentTool = btn.dataset.tool;
-    });
-});
-
-document.getElementById('btnClear').addEventListener('click', () => { for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) setCell(r, c, 'eraser'); setEditorStatus('Очищено', 'info'); });
-document.getElementById('btnFillWalls').addEventListener('click', () => { for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) setCell(r, c, 'wall'); setEditorStatus('Заполнено', 'info'); });
-document.getElementById('btnValidate').addEventListener('click', () => {
-    let starts = 0, exits = 0, fishes = 0;
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const t = getCellTool(r, c); if (t === 'start') starts++; if (t === 'exit') exits++; if (t === 'fish') fishes++; }
-    const errors = [];
-    if (starts === 0) errors.push('❌ Нет старта');
-    if (exits === 0) errors.push('❌ Нет выхода');
-    if (fishes === 0) errors.push('⚠️ Нет рыбок');
-    if (errors.length) setEditorStatus(errors.join('<br>'), 'err');
-    else setEditorStatus(`✅ Валиден! Рыбок: ${fishes}`, 'ok');
-});
-
-document.getElementById('btnTestLevel').addEventListener('click', () => {
-    let levelStr = '';
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
-    allLevels.push(levelStr);
-    currentLevelIndex = allLevels.length - 1;
-    document.getElementById('gameMode').classList.add('active');
-    document.getElementById('editorMode').classList.remove('active');
-    document.getElementById('btnGameMode').classList.add('active');
-    document.getElementById('btnEditorMode').classList.remove('active');
-    initLevel(currentLevelIndex);
-    setEditorStatus('▶️ Тест...', 'info');
-});
-
-document.getElementById('btnSaveLevel').addEventListener('click', () => {
-    let levelStr = '';
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) levelStr += toolToChar[getCellTool(r, c)];
-    customLevels.push(levelStr);
-    localStorage.setItem('customLevels', JSON.stringify(customLevels));
-    allLevels = [...defaultLevels, ...customLevels];
-    updateLevelsList();
-    setEditorStatus('💾 Сохранён!', 'ok');
-});
-
-function setEditorStatus(msg, type) {
-    const s = document.getElementById('editorStatus');
-    s.innerHTML = msg;
-    s.className = 'editor-status ' + type;
-}
-
-initGrid();
-updateLevelsList();
-initLevel(0);
-gameLoop();
-</script>
-</body>
-</html>
+const defaultLevels = [
+    "111111111111111111111111" + "12...........1.......1" + "1.1111111111.1.1111111.1" + "1.1........1.1.1.....1" + "1.1.F......1.1.1.F...1" + "1.1.11111111.1.11111.1" + "1.1........1...1....11" + "1.11111111.11111.1..11" + "1.1........1.....1....1" + "1.1.V......1.V...1.V..1" + "1.1........1.....1....1" + "1.F........1..E..1...31" + "111111111111111111111111",
+    "111111111111111111111111" + "12.1...1...1...1...1..1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.F.1.F.1.F.1.F.1.F.1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1.V.1.V.1.V.1.V.1.V.1" + "1.1.1.1.1.1.1.1.1.1.1.1" + "1.1...1...1...1...1...1" + "1.F.1.E.1.E.1.E.1.E.1.31" + "111111111111111111111111",
+    "111111111111111111111111" + "12....................1" + "1.111111.111111.11111.1" + "1.1....1.1....1.1....1.1" + "1.1.V..1.1.V..1.
