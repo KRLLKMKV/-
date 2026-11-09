@@ -328,7 +328,7 @@
 // === КЛАССЫ ИГРЫ ===
 class Player {
     constructor() {
-        this.size = 24; // Чуть увеличили размер для лучшей детализации
+        this.size = 32; // Размер 32x32 для чёткого пиксель-арта (сетка 16x16, пиксель = 2px)
         this.speed = 3;
         this.x = 0;
         this.y = 0;
@@ -356,20 +356,19 @@ class Player {
 
         // Обновляем анимацию только если движемся
         if (isMoving) {
-            this.walkCycle += 0.25; // Скорость анимации
+            this.walkCycle += 0.2; // Скорость переключения кадров
         } else {
             this.walkCycle = 0; // Сброс в спокойное состояние
         }
     }
 
     draw(ctx, catImage) {
-        // Если картинка cat1.png загрузилась, рисуем её (как раньше)
+        // Если картинка cat1.png загрузилась, рисуем её (приоритет)
         if (catImage.complete && catImage.naturalWidth !== 0) {
             ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
             return;
         }
 
-        // === ПРОЦЕДУРНАЯ АНИМАЦИЯ КОТИКА ===
         ctx.save(); // Сохраняем состояние холста
         
         // Перемещаем точку отсчёта в центр игрока
@@ -380,65 +379,78 @@ class Player {
         // Отражаем по горизонтали, если котик смотрит влево
         ctx.scale(this.facing, 1);
 
-        // Вычисляем "подпрыгивание" (синусоида от 0 до 2 пикселей)
-        let bob = Math.sin(this.walkCycle) * 2;
-        // Вычисляем виляние хвостом
-        let tailWag = Math.sin(this.walkCycle * 1.5) * 5;
+        const p = this.size / 16; // Размер одного "пикселя" (2px)
+        
+        // Лёгкое подпрыгивание при ходьбе
+        let bob = (this.walkCycle > 0) ? Math.sin(this.walkCycle * 2) * 2 : 0;
+        ctx.translate(0, bob);
 
-        // 1. Хвост
-        ctx.beginPath();
-        ctx.moveTo(-6, 4 + bob);
-        ctx.quadraticCurveTo(-14, -2 + tailWag, -12, -10 + tailWag);
-        ctx.strokeStyle = '#FF8000';
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        // Кадр 1 (стойка / левая нога впереди)
+        const frame1 = [
+            "....OO..OO......",
+            "...OOOOOOOOO....",
+            "..OOOOOOOOOOOO..",
+            "..OWWOOOOOOOWWO.",
+            "..OOOOOPPOOOOO..",
+            "...OOOOOOOOOO...",
+            "....OOOOOOOO....",
+            "...OOOOOOOOOO...",
+            "..OOOOOOOOOOOO..",
+            ".TOOOOOOOOOOOOO.",
+            ".TOOOOOOOOOOOOO.",
+            "..OOOOOOOOOOOO..",
+            "...OOOO..OOOO...",
+            "...OOOO..OOOO...",
+            "...BBBB..BBBB...",
+            "................"
+        ];
 
-        // 2. Тело
-        ctx.fillStyle = '#FF8000';
-        ctx.beginPath();
-        ctx.ellipse(0, 4 + bob, 9, 7, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        // Кадр 2 (шаг / правая нога впереди, хвост дёрнулся)
+        const frame2 = [
+            "....OO..OO......",
+            "...OOOOOOOOO....",
+            "..OOOOOOOOOOOO..",
+            "..OWWOOOOOOOWWO.",
+            "..OOOOOPPOOOOO..",
+            "...OOOOOOOOOO...",
+            "....OOOOOOOO....",
+            "...OOOOOOOOOO...",
+            "..OOOOOOOOOOOO..",
+            "..TOOOOOOOOOOOO.",
+            "..TOOOOOOOOOOOO.",
+            "...OOOOOOOOOOO..",
+            "....OOOO..OOOO..",
+            "....OOOO..OOOO..",
+            "....BBBB..BBBB..",
+            "................"
+        ];
 
-        // 3. Голова
-        ctx.fillStyle = '#FF8000';
-        ctx.beginPath();
-        ctx.arc(6, -4 + bob, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        // Переключаем кадры на основе счётчика шагов
+        let frame = (this.walkCycle > 0 && Math.floor(this.walkCycle * 2) % 2 === 1) ? frame2 : frame1;
 
-        // 4. Ушки
-        ctx.beginPath();
-        ctx.moveTo(2, -8 + bob);
-        ctx.lineTo(4, -14 + bob);
-        ctx.lineTo(8, -9 + bob);
-        ctx.fill();
-        ctx.stroke();
+        // Палитра пиксель-арта
+        const colors = {
+            'O': '#FFAA33', // Яркий оранжевый (тело)
+            'T': '#E68A00', // Тёмно-оранжевый (хвост)
+            'B': '#222222', // Почти чёрный (лапки)
+            'W': '#FFFFFF', // Белый (глаза)
+            'P': '#FF8888'  // Розовый (носик)
+        };
 
-        ctx.beginPath();
-        ctx.moveTo(8, -9 + bob);
-        ctx.lineTo(12, -13 + bob);
-        ctx.lineTo(12, -6 + bob);
-        ctx.fill();
-        ctx.stroke();
+        // Смещаем начало отрисовки, чтобы сетка 16x16 была центрирована относительно (0,0)
+        let startX = -8 * p;
+        let startY = -8 * p;
 
-        // 5. Глаза и носик
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(8, -5 + bob, 1.5, 0, Math.PI * 2); // Правый глаз
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(4, -5 + bob, 1.5, 0, Math.PI * 2); // Левый глаз
-        ctx.fill();
-
-        ctx.fillStyle = '#FFB6C1'; // Розовый носик
-        ctx.beginPath();
-        ctx.arc(6, -2 + bob, 1.5, 0, Math.PI * 2);
-        ctx.fill();
+        // Рисуем пиксель за пикселем
+        for (let r = 0; r < 16; r++) {
+            for (let c = 0; c < 16; c++) {
+                let char = frame[r][c];
+                if (char !== '.' && colors[char]) {
+                    ctx.fillStyle = colors[char];
+                    ctx.fillRect(startX + c * p, startY + r * p, p, p);
+                }
+            }
+        }
 
         ctx.restore(); // Восстанавливаем состояние холста
     }
