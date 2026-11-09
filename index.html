@@ -4,249 +4,251 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра "Лабиринт" + Редактор</title>
-   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        background-image: url('cats.png');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-        color: white;
-        padding-bottom: 40px;
-    }
-    .nav {
-        background: rgba(0,0,0,0.8);
-        padding: 15px 30px;
-        border-radius: 15px;
-        margin: 20px;
-        display: flex;
-        gap: 15px;
-        backdrop-filter: blur(10px);
-    }
-    .nav button {
-        padding: 10px 25px;
-        border: none;
-        border-radius: 10px;
-        background: #45475a;
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .nav button:hover { background: #585b70; }
-    .nav button.active { background: #89b4fa; color: #1e1e2e; }
-    
-    .mode { display: none; width: 100%; max-width: 1400px; padding: 20px; }
-    .mode.active { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
-    
-    /* === ИГРОВОЙ РЕЖИМ === */
-    .game-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    .ui-panel {
-        background: rgba(0,0,0,0.75);
-        padding: 12px 25px;
-        border-radius: 15px;
-        font-size: 20px;
-        font-weight: bold;
-        backdrop-filter: blur(5px);
-        display: flex;
-        gap: 30px;
-    }
-    .fish-count { color: #fffa65; }
-    canvas {
-        background: rgba(244,164,96,0.95);
-        border: 2px solid #000;
-        border-radius: 10px;
-    }
-    .win-screen {
-        position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.9);
-        padding: 40px 60px;
-        border-radius: 20px;
-        text-align: center;
-        display: none;
-        z-index: 100;
-    }
-    .win-screen h1 { color: #008000; font-size: 48px; margin-bottom: 20px; }
-    .win-screen button {
-        margin-top: 20px;
-        padding: 12px 30px;
-        font-size: 18px;
-        border: none;
-        border-radius: 10px;
-        background: #89b4fa;
-        color: #1e1e2e;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    
-    /* === РЕДАКТОР — ИСПРАВЛЕННАЯ ВЕРСТКА === */
-    .editor-tools {
-        background: rgba(0,0,0,0.8);
-        padding: 20px;
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
-        width: 240px;
-        flex-shrink: 0;
-    }
-    .editor-tools h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
-    .tool-btn {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 8px;
-        border: 2px solid transparent;
-        border-radius: 8px;
-        background: #45475a;
-        color: white;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.15s;
-    }
-    .tool-btn:hover { background: #585b70; }
-    .tool-btn.active { border-color: #89b4fa; }
-    .tool-icon {
-        width: 24px; height: 24px;
-        border-radius: 4px;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 12px;
-        flex-shrink: 0;
-    }
-    .icon-wall { background: #269926; }
-    .icon-start { background: #00bfff; }
-    .icon-exit { background: #2ed573; }
-    .icon-fish { background: #FFB000; }
-    .icon-enemy-e { background: #FF0000; }
-    .icon-enemy-v { background: #FF4444; }
-    .icon-eraser { background: #f4a261; }
-    
-    .editor-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 15px;
-    }
-    .action-btn {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 8px;
-        background: #89b4fa;
-        color: #1e1e2e;
-        font-weight: bold;
-        cursor: pointer;
-        font-size: 14px;
-        transition: opacity 0.15s;
-    }
-    .action-btn:hover { opacity: 0.85; }
-    .action-btn.danger { background: #f38ba8; }
-    .action-btn.success { background: #a6e3a1; }
-    .action-btn.warning { background: #f9e2af; }
-    
-    .editor-canvas-wrap {
-        background: rgba(0,0,0,0.8);
-        padding: 20px;
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        flex-shrink: 0;
-    }
-    .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
-    
-    #grid {
-        display: grid;
-        grid-template-columns: repeat(20, 30px);
-        grid-template-rows: repeat(15, 30px);
-        gap: 1px;
-        background: #1e1e2e;
-        border: 2px solid #585b70;
-        border-radius: 4px;
-        cursor: crosshair;
-        user-select: none;
-    }
-    .cell {
-        width: 30px; height: 30px;
-        background: #f4a261;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 14px; font-weight: bold;
-        transition: background 0.05s;
-    }
-    .cell.wall { background: #269926; }
-    .cell.start { background: #00bfff; }
-    .cell.exit { background: #2ed573; }
-    
-    .editor-status {
-        margin-top: 15px;
-        padding: 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        width: 100%;
-        text-align: center;
-    }
-    .editor-status.ok { background: #a6e3a1; color: #1e1e2e; }
-    .editor-status.err { background: #f38ba8; color: #1e1e2e; }
-    .editor-status.info { background: #89b4fa; color: #1e1e2e; }
-    
-    .editor-hint {
-        margin-top: 10px;
-        font-size: 12px;
-        color: #a6adc8;
-        text-align: center;
-    }
-    
-    /* === СПИСОК УРОВНЕЙ === */
-    .levels-list {
-        background: rgba(0,0,0,0.8);
-        padding: 20px;
-        border-radius: 15px;
-        max-height: 500px;
-        overflow-y: auto;
-        width: 300px;
-        flex-shrink: 0;
-    }
-    .levels-list h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
-    .level-item {
-        padding: 10px;
-        margin-bottom: 8px;
-        background: #45475a;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-    }
-    .level-item span { font-size: 13px; }
-    .level-item button {
-        padding: 5px 12px;
-        border: none;
-        border-radius: 6px;
-        background: #89b4fa;
-        color: #1e1e2e;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 12px;
-    }
-    .level-item button.delete { background: #f38ba8; }
-</style>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-image: url('cats.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            color: white;
+            padding-bottom: 40px;
+        }
+        .nav {
+            background: rgba(0,0,0,0.8);
+            padding: 15px 30px;
+            border-radius: 15px;
+            margin: 20px;
+            display: flex;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .nav button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #45475a;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav button:hover { background: #585b70; }
+        .nav button.active { background: #89b4fa; color: #1e1e2e; }
+        
+        .mode { display: none; width: 100%; max-width: 1400px; padding: 20px; }
+        .mode.active { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+        
+        /* === ИГРОВОЙ РЕЖИМ === */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .ui-panel {
+            background: rgba(0,0,0,0.75);
+            padding: 12px 25px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+            display: flex;
+            gap: 30px;
+        }
+        .fish-count { color: #fffa65; }
+        canvas {
+            background: rgba(244,164,96,0.95);
+            border: 2px solid #000;
+            border-radius: 10px;
+        }
+        .win-screen {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        .win-screen h1 { color: #008000; font-size: 48px; margin-bottom: 20px; }
+        .win-screen button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background: #89b4fa;
+            color: #1e1e2e;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* === РЕДАКТОР (ИСПРАВЛЕННАЯ ВЁРСТКА) === */
+        .editor-tools {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            width: 240px;
+            flex-shrink: 0;
+        }
+        .editor-tools h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
+        .tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: #45475a;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.15s;
+        }
+        .tool-btn:hover { background: #585b70; }
+        .tool-btn.active { border-color: #89b4fa; }
+        .tool-icon {
+            width: 24px; height: 24px;
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 12px;
+            flex-shrink: 0;
+        }
+        .icon-wall { background: #269926; }
+        .icon-start { background: #00bfff; }
+        .icon-exit { background: #2ed573; }
+        .icon-fish { background: #FFB000; }
+        .icon-enemy-e { background: #FF0000; }
+        .icon-enemy-v { background: #FF4444; }
+        .icon-eraser { background: #f4a261; }
+        
+        .editor-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #89b4fa;
+            color: #1e1e2e;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.15s;
+        }
+        .action-btn:hover { opacity: 0.85; }
+        .action-btn.danger { background: #f38ba8; }
+        .action-btn.success { background: #a6e3a1; }
+        .action-btn.warning { background: #f9e2af; }
+        
+        .editor-canvas-wrap {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
+        
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(20, 30px);
+            grid-template-rows: repeat(15, 30px);
+            gap: 1px;
+            background: #1e1e2e;
+            border: 2px solid #585b70;
+            border-radius: 4px;
+            cursor: crosshair;
+            user-select: none;
+        }
+        .cell {
+            width: 30px; height: 30px;
+            background: #f4a261;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: bold;
+            transition: background 0.05s;
+        }
+        .cell.wall { background: #269926; }
+        .cell.start { background: #00bfff; }
+        .cell.exit { background: #2ed573; }
+        
+        .editor-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            width: 100%;
+            text-align: center;
+        }
+        .editor-status.ok { background: #a6e3a1; color: #1e1e2e; }
+        .editor-status.err { background: #f38ba8; color: #1e1e2e; }
+        .editor-status.info { background: #89b4fa; color: #1e1e2e; }
+        
+        .editor-hint {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #a6adc8;
+            text-align: center;
+        }
+        
+        /* === СПИСОК УРОВНЕЙ === */
+        .levels-list {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            width: 300px;
+            flex-shrink: 0;
+        }
+        .levels-list h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
+        .level-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #45475a;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .level-item span { font-size: 13px; }
+        .level-item button {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #89b4fa;
+            color: #1e1e2e;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .level-item button.delete { background: #f38ba8; }
+    </style>
+</head>
+<body>
 
-    <!-- Навигация -->
+    <!-- НАВИГАЦИЯ -->
     <div class="nav">
         <button id="btnGameMode" class="active">🎮 Играть</button>
         <button id="btnEditorMode">🛠️ Редактор</button>
@@ -275,53 +277,123 @@
     <div class="win-screen" id="winScreen">
         <h1>🎉 Победа!</h1>
         <p>Вы собрали всю рыбку!</p>
-        <button id="btnContinue">Продолжить</button>
+        <button id="btnContinue">Играть сначала</button>
     </div>
 
     <!-- РЕДАКТОР -->
-   <!-- РЕДАКТОР -->
-<div id="editorMode" class="mode">
-    <div class="editor-tools">
-        <h2>🛠️ Инструменты</h2>
-        <button class="tool-btn active" data-tool="wall">
-            <span class="tool-icon icon-wall">1</span> Стена
-        </button>
-        <button class="tool-btn" data-tool="start">
-            <span class="tool-icon icon-start">2</span> Старт
-        </button>
-        <button class="tool-btn" data-tool="exit">
-            <span class="tool-icon icon-exit">3</span> Выход
-        </button>
-        <button class="tool-btn" data-tool="fish">
-            <span class="tool-icon icon-fish">F</span> Рыбка
-        </button>
-        <button class="tool-btn" data-tool="enemy-e">
-            <span class="tool-icon icon-enemy-e">E</span> Враг →
-        </button>
-        <button class="tool-btn" data-tool="enemy-v">
-            <span class="tool-icon icon-enemy-v">V</span> Враг ↕
-        </button>
-        <button class="tool-btn" data-tool="eraser">
-            <span class="tool-icon icon-eraser">.</span> Ластик
-        </button>
+    <div id="editorMode" class="mode">
+        <div class="editor-tools">
+            <h2>🛠️ Инструменты</h2>
+            <button class="tool-btn active" data-tool="wall">
+                <span class="tool-icon icon-wall">1</span> Стена
+            </button>
+            <button class="tool-btn" data-tool="start">
+                <span class="tool-icon icon-start">2</span> Старт
+            </button>
+            <button class="tool-btn" data-tool="exit">
+                <span class="tool-icon icon-exit">3</span> Выход
+            </button>
+            <button class="tool-btn" data-tool="fish">
+                <span class="tool-icon icon-fish">F</span> Рыбка
+            </button>
+            <button class="tool-btn" data-tool="enemy-e">
+                <span class="tool-icon icon-enemy-e">E</span> Враг →
+            </button>
+            <button class="tool-btn" data-tool="enemy-v">
+                <span class="tool-icon icon-enemy-v">V</span> Враг ↕
+            </button>
+            <button class="tool-btn" data-tool="eraser">
+                <span class="tool-icon icon-eraser">.</span> Ластик
+            </button>
 
-        <h2 style="margin-top:20px;">⚡ Действия</h2>
-        <div class="editor-actions">
-            <button class="action-btn danger" id="btnClear">🗑️ Очистить</button>
-            <button class="action-btn" id="btnFillWalls">🧱 Заполнить стенами</button>
-            <button class="action-btn success" id="btnValidate">✅ Проверить</button>
-            <button class="action-btn warning" id="btnTestLevel">▶️ Тестировать</button>
-            <button class="action-btn success" id="btnSaveLevel">💾 Сохранить</button>
+            <h2 style="margin-top:20px;">⚡ Действия</h2>
+            <div class="editor-actions">
+                <button class="action-btn danger" id="btnClear">🗑️ Очистить</button>
+                <button class="action-btn" id="btnFillWalls">🧱 Заполнить стенами</button>
+                <button class="action-btn success" id="btnValidate">✅ Проверить</button>
+                <button class="action-btn warning" id="btnTestLevel">▶️ Тестировать</button>
+                <button class="action-btn success" id="btnSaveLevel">💾 Сохранить</button>
+            </div>
+        </div>
+
+        <div class="editor-canvas-wrap">
+            <h2>🎮 Сетка 20×15</h2>
+            <div id="grid"></div>
+            <div class="editor-status info" id="editorStatus">Готов к работе</div>
+            <p class="editor-hint">💡 Зажмите мышь и водите по сетке. ПКМ — ластик.</p>
         </div>
     </div>
 
-    <div class="editor-canvas-wrap">
-        <h2>🎮 Сетка 20×15</h2>
-        <div id="grid"></div>
-        <div class="editor-status info" id="editorStatus">Готов к работе</div>
-        <p class="editor-hint">💡 Зажмите мышь и водите по сетке. ПКМ — ластик.</p>
-    </div>
-</div>
+<script>
+// === КЛАССЫ ИГРЫ ===
+class Player {
+    constructor() {
+        this.size = 22;
+        this.speed = 3;
+        this.x = 0;
+        this.y = 0;
+    }
+    move(keys) {
+        let nextX = this.x, nextY = this.y;
+        if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) nextY -= this.speed;
+        if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) nextY += this.speed;
+        if (!checkCollision(this.x, nextY, this.size)) this.y = nextY;
+        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) nextX -= this.speed;
+        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) nextX += this.speed;
+        if (!checkCollision(nextX, this.y, this.size)) this.x = nextX;
+    }
+    draw(ctx, catImage) {
+        if (catImage.complete && catImage.naturalWidth !== 0) {
+            ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
+        } else {
+            ctx.fillStyle = '#FF8000';
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.x, this.y, this.size, this.size);
+        }
+    }
+}
+
+class HorizontalRedCube {
+    constructor(c, i) {
+        this.size = 20;
+        this.x = c * blockSize + 5;
+        this.y = i * blockSize + 5;
+        this.dx = Math.random() > 0.5 ? 1.5 : -1.5;
+        this.dy = 0;
+    }
+    move() {
+        let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
+        if (checkCollision(nextEx, nextEy, this.size)) {
+            this.dx = -this.dx;
+            this.dy = -this.dy;
+        } else {
+            this.x = nextEx;
+            this.y = nextEy;
+        }
+    }
+}
+
+class VerticalRedCube {
+    constructor(c, i) {
+        this.size = 20;
+        this.x = c * blockSize + 5;
+        this.y = i * blockSize + 5;
+        this.dx = 0;
+        this.dy = Math.random() > 0.5 ? 1.5 : -1.5;
+    }
+    move() {
+        let nextEx = this.x + this.dx, nextEy = this.y + this.dy;
+        if (checkCollision(nextEx, nextEy, this.size)) {
+            this.dx = -this.dx;
+            this.dy = -this.dy;
+        } else {
+            this.x = nextEx;
+            this.y = nextEy;
+        }
+    }
+}
 
 // === ГОТОВЫЕ УРОВНИ ===
 const defaultLevels = [
@@ -331,7 +403,6 @@ const defaultLevels = [
     "11111111111111111111" + "12................F1" + "1.1111.11111.1111..1" + "1.1...1.1...1.1....1" + "1.1.V.1.1.V.1.1.V..1" + "1.1...1.1...1.1....1" + "1.1111.11111.1111..1" + "1...E...........E..1" + "11111.11111.11111..1" + "1.1...1.1...1.1....1" + "1.1.V.1.1.V.1.1.V..1" + "1.1...1.1...1.1....1" + "1.1111.11111.1111..1" + "1F................31" + "11111111111111111111"
 ];
 
-// Загрузка пользовательских уровней из localStorage
 let customLevels = JSON.parse(localStorage.getItem('customLevels') || '[]');
 let allLevels = [...defaultLevels, ...customLevels];
 
@@ -528,7 +599,7 @@ function updateLevelsList() {
         item.className = 'level-item';
         const isCustom = idx >= defaultLevels.length;
         item.innerHTML = `
-            <span>Уровень ${idx + 1} ${isCustom ? '(пользовательский)' : ''}</span>
+            <span>Уровень ${idx + 1} ${isCustom ? '(ваш)' : ''}</span>
             <button onclick="initLevel(${idx})">Играть</button>
             ${isCustom ? `<button class="delete" onclick="deleteCustomLevel(${idx - defaultLevels.length})">Удалить</button>` : ''}
         `;
@@ -691,7 +762,7 @@ document.getElementById('btnSaveLevel').addEventListener('click', () => {
 function setEditorStatus(msg, type) {
     const s = document.getElementById('editorStatus');
     s.innerHTML = msg;
-    s.className = 'status ' + type;
+    s.className = 'editor-status ' + type;
 }
 
 // Запуск
