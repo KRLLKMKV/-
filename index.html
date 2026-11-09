@@ -6,36 +6,41 @@
     <title>Игра "Лабиринт" + Редактор</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
+        
         body {
             background-image: url('cats.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             font-family: 'Segoe UI', Tahoma, sans-serif;
             color: white;
-            padding-bottom: 40px;
         }
+        
+        /* Навигация - компактная */
         .nav {
-            background: rgba(0,0,0,0.8);
-            padding: 15px 30px;
-            border-radius: 15px;
-            margin: 20px;
+            background: rgba(0,0,0,0.85);
+            padding: 8px 20px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
+            justify-content: center;
             backdrop-filter: blur(10px);
+            flex-shrink: 0;
         }
         .nav button {
-            padding: 10px 25px;
+            padding: 8px 20px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             background: #45475a;
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
@@ -43,88 +48,176 @@
         .nav button:hover { background: #585b70; }
         .nav button.active { background: #89b4fa; color: #1e1e2e; }
         
-        .mode { display: none; width: 100%; max-width: 1400px; padding: 20px; }
-        .mode.active { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+        /* Основной контейнер - занимает всё оставшееся место */
+        .mode { 
+            display: none; 
+            flex: 1;
+            overflow: hidden;
+        }
+        .mode.active { 
+            display: flex;
+        }
         
         /* === ИГРОВОЙ РЕЖИМ === */
+        #gameMode.active {
+            flex-direction: row;
+            gap: 15px;
+            padding: 10px;
+        }
+        
         .game-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            gap: 8px;
+            min-width: 0;
         }
+        
         .ui-panel {
             background: rgba(0,0,0,0.75);
-            padding: 12px 25px;
-            border-radius: 15px;
-            font-size: 20px;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: bold;
             backdrop-filter: blur(5px);
             display: flex;
-            gap: 30px;
+            gap: 20px;
+            flex-shrink: 0;
         }
         .fish-count { color: #fffa65; }
+        
         canvas {
             background: rgba(244,164,96,0.95);
             border: 2px solid #000;
-            border-radius: 10px;
+            border-radius: 8px;
+            max-width: 100%;
+            max-height: calc(100vh - 120px);
+            object-fit: contain;
         }
+        
+        .game-controls {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .game-controls button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #89b4fa;
+            color: #1e1e2e;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .game-controls button:hover { background: #74c7ec; }
+        
         .win-screen {
             position: fixed;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.9);
-            padding: 40px 60px;
-            border-radius: 20px;
+            padding: 30px 50px;
+            border-radius: 15px;
             text-align: center;
             display: none;
             z-index: 100;
         }
-        .win-screen h1 { color: #008000; font-size: 48px; margin-bottom: 20px; }
+        .win-screen h1 { color: #008000; font-size: 36px; margin-bottom: 15px; }
         .win-screen button {
-            margin-top: 20px;
-            padding: 12px 30px;
-            font-size: 18px;
+            margin-top: 15px;
+            padding: 10px 25px;
+            font-size: 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             background: #89b4fa;
             color: #1e1e2e;
             cursor: pointer;
             font-weight: bold;
         }
         
+        /* Список уровней - узкая панель справа */
+        .levels-list {
+            background: rgba(0,0,0,0.8);
+            padding: 12px;
+            border-radius: 10px;
+            width: 200px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            backdrop-filter: blur(10px);
+        }
+        .levels-list h2 { 
+            color: #89b4fa; 
+            margin-bottom: 10px; 
+            font-size: 16px;
+        }
+        .level-item {
+            padding: 8px;
+            margin-bottom: 6px;
+            background: #45475a;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .level-item span { font-size: 12px; }
+        .level-item button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 5px;
+            background: #89b4fa;
+            color: #1e1e2e;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .level-item button.delete { background: #f38ba8; }
+        
         /* === РЕДАКТОР === */
+        #editorMode.active {
+            flex-direction: row;
+            gap: 10px;
+            padding: 10px;
+        }
+        
         .editor-tools {
             background: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            width: 240px;
+            padding: 12px;
+            border-radius: 10px;
+            width: 180px;
             flex-shrink: 0;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
         }
-        .editor-tools h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
+        .editor-tools h2 { 
+            color: #89b4fa; 
+            margin-bottom: 10px; 
+            font-size: 16px;
+        }
         .tool-btn {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 10px;
-            margin-bottom: 8px;
+            padding: 8px;
+            margin-bottom: 5px;
             border: 2px solid transparent;
-            border-radius: 8px;
+            border-radius: 6px;
             background: #45475a;
             color: white;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.15s;
         }
         .tool-btn:hover { background: #585b70; }
         .tool-btn.active { border-color: #89b4fa; }
         .tool-icon {
-            width: 24px; height: 24px;
-            border-radius: 4px;
+            width: 20px; height: 20px;
+            border-radius: 3px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 12px;
+            font-weight: bold; font-size: 11px;
             flex-shrink: 0;
         }
         .icon-wall { background: #269926; }
@@ -138,19 +231,19 @@
         .editor-actions {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-top: 15px;
+            gap: 5px;
+            margin-top: 12px;
         }
         .action-btn {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             background: #89b4fa;
             color: #1e1e2e;
             font-weight: bold;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             transition: opacity 0.15s;
         }
         .action-btn:hover { opacity: 0.85; }
@@ -159,33 +252,37 @@
         .action-btn.warning { background: #f9e2af; }
         
         .editor-canvas-wrap {
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+        .editor-canvas-wrap h2 { 
+            color: #89b4fa; 
+            margin-bottom: 10px; 
+            font-size: 16px;
             flex-shrink: 0;
         }
-        .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
         
         #grid {
             display: grid;
-            grid-template-columns: repeat(32, 40px);
-            grid-template-rows: repeat(18, 40px);
+            grid-template-columns: repeat(32, 25px);
+            grid-template-rows: repeat(18, 25px);
             gap: 1px;
             background: #1e1e2e;
             border: 2px solid #585b70;
             border-radius: 4px;
             cursor: crosshair;
             user-select: none;
+            flex-shrink: 0;
         }
         .cell {
-            width: 40px; height: 40px;
+            width: 25px; height: 25px;
             background: #f4a261;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: bold;
+            font-size: 12px; font-weight: bold;
             transition: background 0.05s;
         }
         .cell.wall { background: #269926; }
@@ -193,57 +290,24 @@
         .cell.exit { background: #2ed573; }
         
         .editor-status {
-            margin-top: 15px;
-            padding: 10px;
+            margin-top: 10px;
+            padding: 8px;
             border-radius: 6px;
-            font-size: 13px;
-            width: 100%;
+            font-size: 12px;
             text-align: center;
+            flex-shrink: 0;
         }
         .editor-status.ok { background: #a6e3a1; color: #1e1e2e; }
         .editor-status.err { background: #f38ba8; color: #1e1e2e; }
         .editor-status.info { background: #89b4fa; color: #1e1e2e; }
         
         .editor-hint {
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 8px;
+            font-size: 11px;
             color: #a6adc8;
             text-align: center;
-        }
-        
-        /* === СПИСОК УРОВНЕЙ === */
-        .levels-list {
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 15px;
-            max-height: 500px;
-            overflow-y: auto;
-            width: 300px;
             flex-shrink: 0;
         }
-        .levels-list h2 { color: #89b4fa; margin-bottom: 15px; font-size: 18px; }
-        .level-item {
-            padding: 10px;
-            margin-bottom: 8px;
-            background: #45475a;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-        .level-item span { font-size: 13px; }
-        .level-item button {
-            padding: 5px 12px;
-            border: none;
-            border-radius: 6px;
-            background: #89b4fa;
-            color: #1e1e2e;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .level-item button.delete { background: #f38ba8; }
     </style>
 </head>
 <body>
@@ -262,9 +326,9 @@
                 <div class="fish-count">Осталось рыбок: <span id="fishDisplay">0</span></div>
             </div>
             <canvas id="gameCanvas" width="1280" height="720"></canvas>
-            <div style="display:flex; gap:10px;">
-                <button class="action-btn" id="btnPrevLevel">← Предыдущий</button>
-                <button class="action-btn" id="btnNextLevel">Следующий →</button>
+            <div class="game-controls">
+                <button id="btnPrevLevel">← Предыдущий</button>
+                <button id="btnNextLevel">Следующий →</button>
             </div>
         </div>
         
@@ -306,12 +370,12 @@
                 <span class="tool-icon icon-eraser">.</span> Ластик
             </button>
 
-            <h2 style="margin-top:20px;">⚡ Действия</h2>
+            <h2 style="margin-top:15px;">⚡ Действия</h2>
             <div class="editor-actions">
                 <button class="action-btn danger" id="btnClear">🗑️ Очистить</button>
-                <button class="action-btn" id="btnFillWalls">🧱 Заполнить стенами</button>
+                <button class="action-btn" id="btnFillWalls">🧱 Заполнить</button>
                 <button class="action-btn success" id="btnValidate">✅ Проверить</button>
-                <button class="action-btn warning" id="btnTestLevel">▶️ Тестировать</button>
+                <button class="action-btn warning" id="btnTestLevel">▶️ Тест</button>
                 <button class="action-btn success" id="btnSaveLevel">💾 Сохранить</button>
             </div>
         </div>
@@ -482,7 +546,6 @@ class VerticalRedCube {
 
 // === ГОТОВЫЕ УРОВНИ (32×18) ===
 const defaultLevels = [
-    // Уровень 1 - "Первые шаги"
     "11111111111111111111111111111111" +
     "12..............................1" +
     "1.11111111.11111111.11111111.11.1" +
@@ -502,7 +565,6 @@ const defaultLevels = [
     "1.F......1.E......1.E......1..31" +
     "11111111111111111111111111111111",
     
-    // Уровень 2 - "Лабиринт"
     "11111111111111111111111111111111" +
     "12..1...1...1...1...1...1...1..1" +
     "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1" +
@@ -522,7 +584,6 @@ const defaultLevels = [
     "1.F.1.E.1.E.1.E.1.E.1.E.1.E.1.31" +
     "11111111111111111111111111111111",
     
-    // Уровень 3 - "Змеиное гнездо"
     "11111111111111111111111111111111" +
     "12..............................1" +
     "1.111111.111111.111111.111111.1" +
@@ -542,7 +603,6 @@ const defaultLevels = [
     "1.F....1.E....1.E....1.E....1.31" +
     "11111111111111111111111111111111",
     
-    // Уровень 4 - "Арена Хаоса"
     "11111111111111111111111111111111" +
     "12..............................1" +
     "1.1111.11111.11111.11111.11111.1" +
@@ -566,7 +626,6 @@ const defaultLevels = [
 let customLevels = JSON.parse(localStorage.getItem('customLevels') || '[]');
 let allLevels = [...defaultLevels, ...customLevels];
 
-// === ПЕРЕМЕННЫЕ ИГРЫ ===
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const levelDisplay = document.getElementById('levelDisplay');
@@ -583,7 +642,6 @@ let entities = [];
 let currentLevelIndex = 0;
 let currentMap = [];
 
-// === ФУНКЦИИ ИГРЫ ===
 function parseMap(levelStr) {
     let map = [];
     fishList = [];
@@ -720,7 +778,6 @@ function gameLoop() {
 window.addEventListener('keydown', (e) => { keys[e.key] = true; });
 window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
-// === НАВИГАЦИЯ ===
 document.getElementById('btnGameMode').addEventListener('click', () => {
     document.getElementById('gameMode').classList.add('active');
     document.getElementById('editorMode').classList.remove('active');
@@ -750,7 +807,6 @@ document.getElementById('btnContinue').addEventListener('click', () => {
     initLevel(0);
 });
 
-// === СПИСОК УРОВНЕЙ ===
 function updateLevelsList() {
     const list = document.getElementById('levelsList');
     list.innerHTML = '';
@@ -776,7 +832,6 @@ window.deleteCustomLevel = function(idx) {
     initLevel(currentLevelIndex);
 };
 
-// === РЕДАКТОР ===
 const COLS = 32, ROWS = 18;
 const grid = document.getElementById('grid');
 const cells = [];
@@ -925,7 +980,6 @@ function setEditorStatus(msg, type) {
     s.className = 'editor-status ' + type;
 }
 
-// Запуск
 initGrid();
 updateLevelsList();
 initLevel(0);
