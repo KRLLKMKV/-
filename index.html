@@ -328,30 +328,119 @@
 // === КЛАССЫ ИГРЫ ===
 class Player {
     constructor() {
-        this.size = 22;
+        this.size = 24; // Чуть увеличили размер для лучшей детализации
         this.speed = 3;
         this.x = 0;
         this.y = 0;
+        this.walkCycle = 0; // Счётчик кадров анимации
+        this.facing = 1;    // 1 = смотрит вправо, -1 = смотрит влево
     }
+
     move(keys) {
         let nextX = this.x, nextY = this.y;
-        if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) nextY -= this.speed;
-        if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) nextY += this.speed;
+        let isMoving = false;
+
+        // Движение по вертикали
+        if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['ц'] || keys['Ц']) { nextY -= this.speed; isMoving = true; }
+        if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['ы'] || keys['Ы']) { nextY += this.speed; isMoving = true; }
         if (!checkCollision(this.x, nextY, this.size)) this.y = nextY;
-        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) nextX -= this.speed;
-        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) nextX += this.speed;
+
+        // Движение по горизонтали + запоминание направления
+        if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ф'] || keys['Ф']) {
+            nextX -= this.speed; isMoving = true; this.facing = -1;
+        }
+        if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['в'] || keys['В']) {
+            nextX += this.speed; isMoving = true; this.facing = 1;
+        }
         if (!checkCollision(nextX, this.y, this.size)) this.x = nextX;
+
+        // Обновляем анимацию только если движемся
+        if (isMoving) {
+            this.walkCycle += 0.25; // Скорость анимации
+        } else {
+            this.walkCycle = 0; // Сброс в спокойное состояние
+        }
     }
+
     draw(ctx, catImage) {
+        // Если картинка cat1.png загрузилась, рисуем её (как раньше)
         if (catImage.complete && catImage.naturalWidth !== 0) {
             ctx.drawImage(catImage, this.x, this.y, this.size, this.size);
-        } else {
-            ctx.fillStyle = '#FF8000';
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(this.x, this.y, this.size, this.size);
+            return;
         }
+
+        // === ПРОЦЕДУРНАЯ АНИМАЦИЯ КОТИКА ===
+        ctx.save(); // Сохраняем состояние холста
+        
+        // Перемещаем точку отсчёта в центр игрока
+        let cx = this.x + this.size / 2;
+        let cy = this.y + this.size / 2;
+        ctx.translate(cx, cy);
+
+        // Отражаем по горизонтали, если котик смотрит влево
+        ctx.scale(this.facing, 1);
+
+        // Вычисляем "подпрыгивание" (синусоида от 0 до 2 пикселей)
+        let bob = Math.sin(this.walkCycle) * 2;
+        // Вычисляем виляние хвостом
+        let tailWag = Math.sin(this.walkCycle * 1.5) * 5;
+
+        // 1. Хвост
+        ctx.beginPath();
+        ctx.moveTo(-6, 4 + bob);
+        ctx.quadraticCurveTo(-14, -2 + tailWag, -12, -10 + tailWag);
+        ctx.strokeStyle = '#FF8000';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 2. Тело
+        ctx.fillStyle = '#FF8000';
+        ctx.beginPath();
+        ctx.ellipse(0, 4 + bob, 9, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // 3. Голова
+        ctx.fillStyle = '#FF8000';
+        ctx.beginPath();
+        ctx.arc(6, -4 + bob, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // 4. Ушки
+        ctx.beginPath();
+        ctx.moveTo(2, -8 + bob);
+        ctx.lineTo(4, -14 + bob);
+        ctx.lineTo(8, -9 + bob);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(8, -9 + bob);
+        ctx.lineTo(12, -13 + bob);
+        ctx.lineTo(12, -6 + bob);
+        ctx.fill();
+        ctx.stroke();
+
+        // 5. Глаза и носик
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(8, -5 + bob, 1.5, 0, Math.PI * 2); // Правый глаз
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(4, -5 + bob, 1.5, 0, Math.PI * 2); // Левый глаз
+        ctx.fill();
+
+        ctx.fillStyle = '#FFB6C1'; // Розовый носик
+        ctx.beginPath();
+        ctx.arc(6, -2 + bob, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore(); // Восстанавливаем состояние холста
     }
 }
 
