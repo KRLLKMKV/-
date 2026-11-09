@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Подключение шрифта Public Pixel -->
+    
+    <!-- Подключение шрифта Pixelify Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Pixel&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <title>Игра "Лабиринт" + Редактор</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,7 +44,7 @@
             background: #45475a;
             color: white;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -76,7 +78,7 @@
             background: rgba(0,0,0,0.75);
             padding: 8px 20px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             backdrop-filter: blur(5px);
             display: flex;
             gap: 20px;
@@ -102,7 +104,7 @@
             border: none;
             background: #89b4fa;
             color: #1e1e2e;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             font-size: 13px;
         }
@@ -118,7 +120,7 @@
             display: none;
             z-index: 100;
         }
-        .win-screen h1 { color: #008000; font-size: 36px; margin-bottom: 15px; }
+        .win-screen h1 { color: #008000; font-size: 36px; margin-bottom: 15px; font-weight: 700; }
         .win-screen button {
             margin-top: 15px;
             padding: 10px 25px;
@@ -127,7 +129,7 @@
             background: #89b4fa;
             color: #1e1e2e;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
         }
         
         .levels-list {
@@ -138,7 +140,7 @@
             flex-shrink: 0;
             backdrop-filter: blur(10px);
         }
-        .levels-list h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; }
+        .levels-list h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; font-weight: 600; }
         .level-item {
             padding: 8px;
             margin-bottom: 6px;
@@ -154,7 +156,7 @@
             background: #89b4fa;
             color: #1e1e2e;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 11px;
         }
         .level-item button.delete { background: #f38ba8; }
@@ -173,7 +175,7 @@
             backdrop-filter: blur(10px);
             overflow-y: auto;
         }
-        .editor-tools h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; }
+        .editor-tools h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; font-weight: 600; }
         .tool-btn {
             display: flex;
             align-items: center;
@@ -193,7 +195,7 @@
         .tool-icon {
             width: 20px; height: 20px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 11px;
+            font-weight: 700; font-size: 11px;
             flex-shrink: 0;
         }
         .icon-wall { background: #269926; }
@@ -216,7 +218,7 @@
             border: none;
             background: #89b4fa;
             color: #1e1e2e;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             font-size: 12px;
             transition: opacity 0.15s;
@@ -234,7 +236,7 @@
             justify-content: center;
             min-width: 0;
         }
-        .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; flex-shrink: 0; }
+        .editor-canvas-wrap h2 { color: #89b4fa; margin-bottom: 10px; font-size: 16px; font-weight: 600; flex-shrink: 0; }
         
         #grid {
             display: grid;
@@ -251,7 +253,7 @@
             width: 25px; height: 25px;
             background: #f4a261;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: bold;
+            font-size: 12px; font-weight: 700;
             transition: background 0.05s;
         }
         .cell.wall { background: #269926; }
@@ -277,10 +279,10 @@
             flex-shrink: 0;
         }
         
-        /* === ГЛОБАЛЬНЫЕ СТИЛИ: ОСТРЫЕ УГЛЫ И ШРИФТ PUBLIC PIXEL === */
+        /* === ГЛОБАЛЬНЫЕ СТИЛИ: ОСТРЫЕ УГЛЫ И ШРИФТ PIXELIFY SANS === */
         * { 
             border-radius: 0 !important;
-            font-family: 'Public Pixel', cursive !important;
+            font-family: 'Pixelify Sans', cursive, sans-serif !important;
             -webkit-font-smoothing: none;
             -moz-osx-font-smoothing: grayscale;
         }
@@ -548,7 +550,7 @@ function draw() {
                 ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
                 if (fishList.length > 0) {
                     ctx.fillStyle = '#333';
-                    ctx.font = '16px Arial';
+                    ctx.font = "16px 'Pixelify Sans', sans-serif";
                     ctx.fillText('🔒', c * blockSize + 10, r * blockSize + 28);
                 }
             }
