@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Pixel&display=swap" rel="stylesheet">
     <title>Игра "Лабиринт" + Редактор</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -308,8 +311,13 @@
             text-align: center;
             flex-shrink: 0;
         }
-
-        * { border-radius: 0 !important; }
+        
+        * { 
+            border-radius: 0 !important;
+            font-family: 'Public Pixel', cursive !important;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
+        }
     </style>
 </head>
 <body>
