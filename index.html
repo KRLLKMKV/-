@@ -286,6 +286,19 @@
             -webkit-font-smoothing: none;
             -moz-osx-font-smoothing: grayscale;
         }
+
+                /* === ГЛОБАЛЬНЫЕ СТИЛИ: ОСТРЫЕ УГЛЫ И ЧЁТКИЙ ПИКСЕЛЬНЫЙ ШРИФТ === */
+        * { 
+            border-radius: 0 !important;
+            font-family: 'Pixelify Sans', monospace, sans-serif !important;
+            
+            /* Агрессивное отключение сглаживания для чётких пикселей */
+            -webkit-font-smoothing: none !important;
+            -moz-osx-font-smoothing: none !important;
+            font-smooth: never !important;
+            text-rendering: optimizeSpeed !important;
+        }
+        
     </style>
 </head>
 <body>
